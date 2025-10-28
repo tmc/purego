@@ -187,6 +187,77 @@ func TestABI(t *testing.T) {
 	}
 }
 
+func TestABI_ArgumentPassing(t *testing.T) {
+	libFileName := filepath.Join(t.TempDir(), "abitest.so")
+	if err := buildSharedLib("CC", libFileName, filepath.Join("testdata", "abitest", "abi_test.c")); err != nil {
+		t.Fatal(err)
+	}
+	lib, err := purego.Dlopen(libFileName, purego.RTLD_NOW|purego.RTLD_GLOBAL)
+	if err != nil {
+		t.Fatalf("Dlopen(%q) failed: %v", libFileName, err)
+	}
+	t.Cleanup(func() {
+		if err := load.CloseLibrary(lib); err != nil {
+			t.Errorf("Failed to close library: %v", err)
+		}
+	})
+
+	tests := []struct {
+		name string
+		fn   interface{}
+		cFn  string
+		call func(interface{}) string
+		want string
+	}{
+		{
+			name: "multiple_strings_on_stack",
+			fn:   new(func(int32, int32, int32, int32, int32, int32, int32, int32, string, string, string) string),
+			cFn:  "test_8i32_3strings",
+			call: func(f interface{}) string {
+				return (*f.(*func(int32, int32, int32, int32, int32, int32, int32, int32, string, string, string) string))(1, 2, 3, 4, 5, 6, 7, 8, "foo", "bar", "baz")
+			},
+			want: "1:2:3:4:5:6:7:8:foo:bar:baz",
+		},
+		{
+			name: "float_register_independence",
+			fn:   new(func(int32, int32, int32, int32, int32, int32, int32, int32, float32, float32, float32) string),
+			cFn:  "test_8i32_3f32_independent_regs",
+			call: func(f interface{}) string {
+				return (*f.(*func(int32, int32, int32, int32, int32, int32, int32, int32, float32, float32, float32) string))(1, 2, 3, 4, 5, 6, 7, 8, 9.0, 10.0, 11.0)
+			},
+			want: "1:2:3:4:5:6:7:8:9.0:10.0:11.0",
+		},
+		{
+			name: "float32_stack_packing",
+			fn:   new(func(float32, float32, float32, float32, float32, float32, float32, float32, float32, float32, float32) string),
+			cFn:  "test_11_float32_packing",
+			call: func(f interface{}) string {
+				return (*f.(*func(float32, float32, float32, float32, float32, float32, float32, float32, float32, float32, float32) string))(1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0)
+			},
+			want: "1.0:2.0:3.0:4.0:5.0:6.0:7.0:8.0:9.0:10.0:11.0",
+		},
+		{
+			name: "alternating_types",
+			fn:   new(func(int32, bool, int32, bool, int32, bool, int32, bool, int32, bool, int32) string),
+			cFn:  "test_alternating_i32_bool",
+			call: func(f interface{}) string {
+				return (*f.(*func(int32, bool, int32, bool, int32, bool, int32, bool, int32, bool, int32) string))(1, false, 2, true, 3, false, 4, true, 5, false, 6)
+			},
+			want: "1:0:2:1:3:0:4:1:5:0:6",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			purego.RegisterLibFunc(tt.fn, lib, tt.cFn)
+			got := tt.call(tt.fn)
+			if got != tt.want {
+				t.Errorf("%s\n  got:  %q\n  want: %q", tt.cFn, got, tt.want)
+			}
+		})
+	}
+}
+
 func buildSharedLib(compilerEnv, libFile string, sources ...string) error {
 	out, err := exec.Command("go", "env", compilerEnv).Output()
 	if err != nil {
