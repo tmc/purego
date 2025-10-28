@@ -253,10 +253,24 @@ func TestABI_ArgumentPassing(t *testing.T) {
 			},
 			want: "1:2:3:4:5:6:7:8:foo:0:99:bar",
 		},
+		{
+			name: "20_int32",
+			fn:   new(func(int32, int32, int32, int32, int32, int32, int32, int32, int32, int32, int32, int32, int32, int32, int32, int32, int32, int32, int32, int32) string),
+			cFn:  "test_20_int32",
+			call: func(f interface{}) string {
+				return (*f.(*func(int32, int32, int32, int32, int32, int32, int32, int32, int32, int32, int32, int32, int32, int32, int32, int32, int32, int32, int32, int32) string))(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20)
+			},
+			want: "1:2:3:4:5:6:7:8:9:10:11:12:13:14:15:16:17:18:19:20",
+		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			// Skip 20_int32 test on non-Darwin platforms (needs smart stack checking)
+			if tt.name == "20_int32" && (runtime.GOOS != "darwin" || runtime.GOARCH != "arm64") {
+				t.Skip("20 int32 arguments only supported on Darwin ARM64 with smart stack checking")
+			}
+
 			purego.RegisterLibFunc(tt.fn, lib, tt.cFn)
 			got := tt.call(tt.fn)
 			if got != tt.want {
@@ -264,6 +278,51 @@ func TestABI_ArgumentPassing(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestABI_TooManyArguments(t *testing.T) {
+	if runtime.GOOS != "darwin" || runtime.GOARCH != "arm64" {
+		t.Skip("This test is specific to Darwin ARM64")
+	}
+
+	libFileName := filepath.Join(t.TempDir(), "abitest.so")
+	if err := buildSharedLib("CC", libFileName, filepath.Join("testdata", "abitest", "abi_test.c")); err != nil {
+		t.Fatal(err)
+	}
+	lib, err := purego.Dlopen(libFileName, purego.RTLD_NOW|purego.RTLD_GLOBAL)
+	if err != nil {
+		t.Fatalf("Dlopen(%q) failed: %v", libFileName, err)
+	}
+	t.Cleanup(func() {
+		if err := load.CloseLibrary(lib); err != nil {
+			t.Errorf("Failed to close library: %v", err)
+		}
+	})
+
+	// Test that 25 int64 arguments (17 slots needed) exceeds the limit
+	t.Run("25_int64_exceeds_limit", func(t *testing.T) {
+		defer func() {
+			if r := recover(); r != nil {
+				msg := fmt.Sprint(r)
+				// Check that we got the detailed error message
+				if !strings.Contains(msg, "too many stack arguments") {
+					t.Errorf("Expected detailed error message, got: %v", r)
+				}
+				if !strings.Contains(msg, "136 bytes") { // 17 args * 8 bytes
+					t.Errorf("Expected byte count in error message, got: %v", r)
+				}
+				if !strings.Contains(msg, "17 slots") {
+					t.Errorf("Expected slot count in error message, got: %v", r)
+				}
+				t.Logf("Got expected panic with message: %v", r)
+			} else {
+				t.Errorf("Expected panic but didn't get one")
+			}
+		}()
+
+		var fn func(int64, int64, int64, int64, int64, int64, int64, int64, int64, int64, int64, int64, int64, int64, int64, int64, int64, int64, int64, int64, int64, int64, int64, int64, int64) string
+		purego.RegisterLibFunc(&fn, lib, "test_25_int64_exceeds")
+	})
 }
 
 func buildSharedLib(compilerEnv, libFile string, sources ...string) error {

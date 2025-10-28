@@ -2,6 +2,7 @@
 // SPDX-FileCopyrightText: 2025 The Ebitengine Authors
 
 #include <stdint.h>
+#include <inttypes.h>
 #include <stdbool.h>
 #include <assert.h>
 #include <stdio.h>
@@ -189,4 +190,36 @@ void test_mixed_stack_4args(char* buf, size_t bufsize, int32_t a1, int32_t a2, i
                              const char* s1, bool b1, int32_t a9, const char* s2) {
     snprintf(buf, bufsize, "%d:%d:%d:%d:%d:%d:%d:%d:%s:%d:%d:%s",
              a1, a2, a3, a4, a5, a6, a7, a8, s1, b1, a9, s2);
+}
+
+// Test with 20 int32 arguments (beyond 15 limit, tests smart stack checking)
+const char* test_20_int32(int32_t a1, int32_t a2, int32_t a3, int32_t a4,
+                          int32_t a5, int32_t a6, int32_t a7, int32_t a8,
+                          int32_t a9, int32_t a10, int32_t a11, int32_t a12,
+                          int32_t a13, int32_t a14, int32_t a15, int32_t a16,
+                          int32_t a17, int32_t a18, int32_t a19, int32_t a20) {
+    static char result[512];
+    snprintf(result, sizeof(result), "%d:%d:%d:%d:%d:%d:%d:%d:%d:%d:%d:%d:%d:%d:%d:%d:%d:%d:%d:%d",
+             a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16, a17, a18, a19, a20);
+    return result;
+}
+
+// Test with 25 int64 arguments (definitely exceeds limit - would need 17 slots)
+const char* test_25_int64_exceeds(int64_t a1, int64_t a2, int64_t a3, int64_t a4,
+                                   int64_t a5, int64_t a6, int64_t a7, int64_t a8,
+                                   int64_t a9, int64_t a10, int64_t a11, int64_t a12,
+                                   int64_t a13, int64_t a14, int64_t a15, int64_t a16,
+                                   int64_t a17, int64_t a18, int64_t a19, int64_t a20,
+                                   int64_t a21, int64_t a22, int64_t a23, int64_t a24,
+                                   int64_t a25) {
+    static char result[1024];
+    snprintf(result, sizeof(result),
+             "%" PRId64 ":%" PRId64 ":%" PRId64 ":%" PRId64 ":%" PRId64
+             ":%" PRId64 ":%" PRId64 ":%" PRId64 ":%" PRId64 ":%" PRId64
+             ":%" PRId64 ":%" PRId64 ":%" PRId64 ":%" PRId64 ":%" PRId64
+             ":%" PRId64 ":%" PRId64 ":%" PRId64 ":%" PRId64 ":%" PRId64
+             ":%" PRId64 ":%" PRId64 ":%" PRId64 ":%" PRId64 ":%" PRId64,
+             a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16, a17, a18, a19, a20,
+             a21, a22, a23, a24, a25);
+    return result;
 }
