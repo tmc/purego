@@ -210,40 +210,48 @@ func TestABI_ArgumentPassing(t *testing.T) {
 		want string
 	}{
 		{
-			name: "multiple_strings_on_stack",
-			fn:   new(func(int32, int32, int32, int32, int32, int32, int32, int32, string, string, string) string),
-			cFn:  "test_8i32_3strings",
+			name: "10_int32_baseline",
+			fn:   new(func(*byte, uintptr, int32, int32, int32, int32, int32, int32, int32, int32, int32, int32)),
+			cFn:  "test_10_int32",
 			call: func(f interface{}) string {
-				return (*f.(*func(int32, int32, int32, int32, int32, int32, int32, int32, string, string, string) string))(1, 2, 3, 4, 5, 6, 7, 8, "foo", "bar", "baz")
+				buf := make([]byte, 256)
+				(*f.(*func(*byte, uintptr, int32, int32, int32, int32, int32, int32, int32, int32, int32, int32)))(&buf[0], 256, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10)
+				return string(buf[:strings.IndexByte(string(buf), 0)])
 			},
-			want: "1:2:3:4:5:6:7:8:foo:bar:baz",
+			want: "1:2:3:4:5:6:7:8:9:10",
 		},
 		{
-			name: "float_register_independence",
-			fn:   new(func(int32, int32, int32, int32, int32, int32, int32, int32, float32, float32, float32) string),
-			cFn:  "test_8i32_3f32_independent_regs",
+			name: "11_int32",
+			fn:   new(func(*byte, uintptr, int32, int32, int32, int32, int32, int32, int32, int32, int32, int32, int32)),
+			cFn:  "test_11_int32",
 			call: func(f interface{}) string {
-				return (*f.(*func(int32, int32, int32, int32, int32, int32, int32, int32, float32, float32, float32) string))(1, 2, 3, 4, 5, 6, 7, 8, 9.0, 10.0, 11.0)
+				buf := make([]byte, 256)
+				(*f.(*func(*byte, uintptr, int32, int32, int32, int32, int32, int32, int32, int32, int32, int32, int32)))(&buf[0], 256, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11)
+				return string(buf[:strings.IndexByte(string(buf), 0)])
 			},
-			want: "1:2:3:4:5:6:7:8:9.0:10.0:11.0",
+			want: "1:2:3:4:5:6:7:8:9:10:11",
 		},
 		{
-			name: "float32_stack_packing",
-			fn:   new(func(float32, float32, float32, float32, float32, float32, float32, float32, float32, float32, float32) string),
-			cFn:  "test_11_float32_packing",
+			name: "10_float32",
+			fn:   new(func(*byte, uintptr, float32, float32, float32, float32, float32, float32, float32, float32, float32, float32)),
+			cFn:  "test_10_float32",
 			call: func(f interface{}) string {
-				return (*f.(*func(float32, float32, float32, float32, float32, float32, float32, float32, float32, float32, float32) string))(1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0)
+				buf := make([]byte, 256)
+				(*f.(*func(*byte, uintptr, float32, float32, float32, float32, float32, float32, float32, float32, float32, float32)))(&buf[0], 256, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0)
+				return string(buf[:strings.IndexByte(string(buf), 0)])
 			},
-			want: "1.0:2.0:3.0:4.0:5.0:6.0:7.0:8.0:9.0:10.0:11.0",
+			want: "1.0:2.0:3.0:4.0:5.0:6.0:7.0:8.0:9.0:10.0",
 		},
 		{
-			name: "alternating_types",
-			fn:   new(func(int32, bool, int32, bool, int32, bool, int32, bool, int32, bool, int32) string),
-			cFn:  "test_alternating_i32_bool",
+			name: "mixed_stack_strings",
+			fn:   new(func(*byte, uintptr, int32, int32, int32, int32, int32, int32, int32, int32, string, bool, int32, string)),
+			cFn:  "test_mixed_stack_4args",
 			call: func(f interface{}) string {
-				return (*f.(*func(int32, bool, int32, bool, int32, bool, int32, bool, int32, bool, int32) string))(1, false, 2, true, 3, false, 4, true, 5, false, 6)
+				buf := make([]byte, 256)
+				(*f.(*func(*byte, uintptr, int32, int32, int32, int32, int32, int32, int32, int32, string, bool, int32, string)))(&buf[0], 256, 1, 2, 3, 4, 5, 6, 7, 8, "foo", false, 99, "bar")
+				return string(buf[:strings.IndexByte(string(buf), 0)])
 			},
-			want: "1:0:2:1:3:0:4:1:5:0:6",
+			want: "1:2:3:4:5:6:7:8:foo:0:99:bar",
 		},
 	}
 
