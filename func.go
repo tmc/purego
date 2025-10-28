@@ -281,28 +281,84 @@ func RegisterFunc(fptr any, cfn uintptr) {
 				}
 				continue
 			}
-			if runtime.GOARCH == "arm64" && runtime.GOOS == "darwin" &&
-				(numInts >= numOfIntegerRegisters() || numFloats >= numOfFloatRegisters) && v.Kind() != reflect.Struct { // hit the stack
-				fields := make([]reflect.StructField, len(args[i:]))
+			// Check if this specific argument would go on the stack
+			isFloat := v.Kind() == reflect.Float32 || v.Kind() == reflect.Float64
+			isInt := !isFloat && v.Kind() != reflect.Struct
+			wouldBeOnStack := (isInt && numInts >= numOfIntegerRegisters()) || (isFloat && numFloats >= numOfFloatRegisters)
+
+			// Don't use C struct packing when calling callbacks, as the callback wrapper
+			// expects the old unpacked layout where each argument is in its own 8-byte slot.
+			// TODO: Fix the callback wrapper to handle C-packed layout correctly.
+			isCallback := cfn >= callbackasmABI0 && cfn < callbackasmABI0+uintptr(callbackMaxFrame*8)
+
+			if runtime.GOARCH == "arm64" && runtime.GOOS == "darwin" && wouldBeOnStack && !isCallback {
+				// Collect remaining arguments that will go on the stack.
+				// We need to bundle them into a struct to get proper C packing.
+				var stackArgs []reflect.Value
+				tempNumInts := numInts
+				tempNumFloats := numFloats
 
 				for j, val := range args[i:] {
-					if val.Kind() == reflect.String {
-						ptr := strings.CString(v.String())
-						keepAlive = append(keepAlive, ptr)
-						val = reflect.ValueOf(ptr)
-						args[i+j] = val
-					}
-					fields[j] = reflect.StructField{
-						Name: "X" + strconv.Itoa(j),
-						Type: val.Type(),
+					// Check if this argument would go on stack
+					valIsFloat := val.Kind() == reflect.Float32 || val.Kind() == reflect.Float64
+					valIsInt := !valIsFloat && val.Kind() != reflect.Struct
+					valOnStack := (valIsInt && tempNumInts >= numOfIntegerRegisters()) || (valIsFloat && tempNumFloats >= numOfFloatRegisters)
+
+					if valOnStack {
+						if val.Kind() == reflect.String {
+							ptr := strings.CString(val.String())
+							keepAlive = append(keepAlive, ptr)
+							val = reflect.ValueOf(ptr)
+							args[i+j] = val
+						}
+						stackArgs = append(stackArgs, val)
+					} else {
+						// This arg still fits in a register, process it normally
+						keepAlive = addValue(val, keepAlive, addInt, addFloat, addStack, &numInts, &numFloats, &numStack)
+						if valIsFloat {
+							tempNumFloats++
+						} else if valIsInt {
+							tempNumInts++
+						}
 					}
 				}
-				structType := reflect.StructOf(fields)
-				structInstance := reflect.New(structType).Elem()
-				for j, val := range args[i:] {
-					structInstance.Field(j).Set(val)
+
+				// Now bundle the stack arguments into a struct and place them
+				// We need to use byte-level packing, so we build a struct and copy its memory.
+				// Note: We can't use placeRegisters for HVA/HFA structs here because that would
+				// place each element in a separate slot, but we need byte-level packing.
+				// So we directly copy the memory without going through placeRegisters.
+				if len(stackArgs) > 0 {
+					fields := make([]reflect.StructField, len(stackArgs))
+					for j, val := range stackArgs {
+						fields[j] = reflect.StructField{
+							Name: "X" + strconv.Itoa(j),
+							Type: val.Type(),
+						}
+					}
+					structType := reflect.StructOf(fields)
+					structInstance := reflect.New(structType).Elem()
+					for j, val := range stackArgs {
+						structInstance.Field(j).Set(val)
+					}
+
+					// Copy the struct memory in 8-byte chunks to the stack
+					ptr := unsafe.Pointer(structInstance.Addr().Pointer())
+					size := structType.Size()
+					for offset := uintptr(0); offset < size; offset += 8 {
+						var chunk uintptr
+						remaining := size - offset
+						if remaining >= 8 {
+							chunk = *(*uintptr)(unsafe.Add(ptr, offset))
+						} else {
+							bytes := (*[8]byte)(unsafe.Add(ptr, offset))
+							for k := uintptr(0); k < remaining; k++ {
+								chunk |= uintptr(bytes[k]) << (k * 8)
+							}
+						}
+						addStack(chunk)
+					}
 				}
-				placeRegisters(structInstance, addFloat, addInt)
 				break
 			}
 			keepAlive = addValue(v, keepAlive, addInt, addFloat, addStack, &numInts, &numFloats, &numStack)
