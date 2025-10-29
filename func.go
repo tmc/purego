@@ -301,7 +301,28 @@ func RegisterFunc(fptr any, cfn uintptr) {
 			isInt := !isFloat && v.Kind() != reflect.Struct
 			primitiveOnStack := (isInt && numInts >= numOfIntegerRegisters()) || (isFloat && numFloats >= numOfFloatRegisters)
 
-			if runtime.GOARCH == "arm64" && runtime.GOOS == "darwin" && primitiveOnStack {
+			// Also check if this is a struct that would go on stack
+			structOnStack := false
+			if runtime.GOARCH == "arm64" && runtime.GOOS == "darwin" && v.Kind() == reflect.Struct {
+				hfa := isHFA(v.Type())
+				hva := isHVA(v.Type())
+				size := v.Type().Size()
+
+				if (hfa || hva || size <= 16) {
+					if hfa && numFloats+v.NumField() > numOfFloatRegisters {
+						structOnStack = true
+					} else if hva && numInts+v.NumField() > numOfIntegerRegisters() {
+						structOnStack = true
+					} else if size <= 16 {
+						slotsNeeded := int((size + 7) / 8)
+						if numInts+slotsNeeded > numOfIntegerRegisters() {
+							structOnStack = true
+						}
+					}
+				}
+			}
+
+			if runtime.GOARCH == "arm64" && runtime.GOOS == "darwin" && (primitiveOnStack || structOnStack) {
 				// Collect remaining arguments and bundle them with proper C packing
 				var stackArgs []reflect.Value
 				tempNumInts := numInts
@@ -318,22 +339,26 @@ func RegisterFunc(fptr any, cfn uintptr) {
 						hva := isHVA(val.Type())
 						size := val.Type().Size()
 
+
 						structWouldFit := false
-						if (hfa || hva || size <= 16) {
-							// Check if struct elements would fit in registers
-							if hfa && tempNumFloats+val.NumField() <= numOfFloatRegisters {
+						if hfa {
+							// HFA: check if elements fit in float registers
+							if tempNumFloats+val.NumField() <= numOfFloatRegisters {
 								structWouldFit = true
 								tempNumFloats += val.NumField()
-							} else if hva && tempNumInts+val.NumField() <= numOfIntegerRegisters() {
+							}
+						} else if hva {
+							// HVA: check if elements fit in int registers
+							if tempNumInts+val.NumField() <= numOfIntegerRegisters() {
 								structWouldFit = true
 								tempNumInts += val.NumField()
-							} else if size <= 16 {
-								// Non-HFA/HVA small structs use int registers for byte-packing
-								slotsNeeded := int((size + 7) / 8)
-								if tempNumInts+slotsNeeded <= numOfIntegerRegisters() {
-									structWouldFit = true
-									tempNumInts += slotsNeeded
-								}
+							}
+						} else if size <= 16 {
+							// Non-HFA/HVA small structs use int registers for byte-packing
+							slotsNeeded := int((size + 7) / 8)
+							if tempNumInts+slotsNeeded <= numOfIntegerRegisters() {
+								structWouldFit = true
+								tempNumInts += slotsNeeded
 							}
 						}
 
@@ -371,18 +396,54 @@ func RegisterFunc(fptr any, cfn uintptr) {
 
 				// Bundle all stack arguments with C struct packing
 				if len(stackArgs) > 0 {
-					fields := make([]reflect.StructField, len(stackArgs))
+					// Build fields with manual padding for proper C alignment
+					var fields []reflect.StructField
+					currentOffset := uintptr(0)
+					fieldIndex := 0
+
 					for j, val := range stackArgs {
-						fields[j] = reflect.StructField{
+						valSize := val.Type().Size()
+						valAlign := val.Type().Align()
+
+						// For structs on the stack, ensure natural alignment
+						// ARM64 requires 8-byte alignment for 8-byte or larger structs
+						if val.Kind() == reflect.Struct && valSize >= 8 {
+							valAlign = 8
+						}
+
+						// Add padding if needed for alignment
+						if currentOffset%uintptr(valAlign) != 0 {
+							paddingNeeded := uintptr(valAlign) - (currentOffset % uintptr(valAlign))
+							paddingField := reflect.StructField{
+								Name: "Pad" + strconv.Itoa(fieldIndex),
+								Type: reflect.ArrayOf(int(paddingNeeded), reflect.TypeOf(byte(0))),
+							}
+							fields = append(fields, paddingField)
+							currentOffset += paddingNeeded
+							fieldIndex++
+						}
+
+						fields = append(fields, reflect.StructField{
 							Name: "X" + strconv.Itoa(j),
 							Type: val.Type(),
-						}
+						})
+						currentOffset += valSize
+						fieldIndex++
 					}
+
 					structType := reflect.StructOf(fields)
 					structInstance := reflect.New(structType).Elem()
-					for j, val := range stackArgs {
-						structInstance.Field(j).Set(val)
+
+					// Set values (skip padding fields)
+					argIndex := 0
+					for j := 0; j < structInstance.NumField(); j++ {
+						fieldName := structType.Field(j).Name
+						if len(fieldName) < 3 || fieldName[:3] != "Pad" {
+							structInstance.Field(j).Set(stackArgs[argIndex])
+							argIndex++
+						}
 					}
+
 
 					// Copy the struct memory in 8-byte chunks to the stack
 					ptr := unsafe.Pointer(structInstance.Addr().Pointer())
