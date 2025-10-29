@@ -279,6 +279,83 @@ func TestABI_ArgumentPassing(t *testing.T) {
 			},
 			want: "1:2:3:4:5:6:7:8:9:10:11:12:13:14:15:16:17:18:19:20",
 		},
+		{
+			name: "8int_hfa2_stack",
+			fn:   new(func(*byte, uintptr, int32, int32, int32, int32, int32, int32, int32, int32, struct{ x, y float32 })),
+			cFn:  "test_8int_hfa2_stack",
+			call: func(f interface{}) string {
+				buf := make([]byte, 256)
+				(*f.(*func(*byte, uintptr, int32, int32, int32, int32, int32, int32, int32, int32, struct{ x, y float32 })))(&buf[0], 256, 1, 2, 3, 4, 5, 6, 7, 8, struct{ x, y float32 }{10.0, 20.0})
+				return string(buf[:strings.IndexByte(string(buf), 0)])
+			},
+			want: "1:2:3:4:5:6:7:8:10.0:20.0",
+		},
+		{
+			name: "8int_2structs_stack",
+			fn:   new(func(*byte, uintptr, int32, int32, int32, int32, int32, int32, int32, int32, struct{ x, y int32 }, struct{ x, y int32 })),
+			cFn:  "test_8int_2structs_stack",
+			call: func(f interface{}) string {
+				buf := make([]byte, 256)
+				(*f.(*func(*byte, uintptr, int32, int32, int32, int32, int32, int32, int32, int32, struct{ x, y int32 }, struct{ x, y int32 })))(&buf[0], 256, 1, 2, 3, 4, 5, 6, 7, 8, struct{ x, y int32 }{9, 10}, struct{ x, y int32 }{11, 12})
+				return string(buf[:strings.IndexByte(string(buf), 0)])
+			},
+			want: "1:2:3:4:5:6:7:8:9:10:11:12",
+		},
+		{
+			name: "8float_hfa2_stack",
+			fn:   new(func(*byte, uintptr, float32, float32, float32, float32, float32, float32, float32, float32, struct{ x, y float32 })),
+			cFn:  "test_8float_hfa2_stack",
+			call: func(f interface{}) string {
+				buf := make([]byte, 256)
+				(*f.(*func(*byte, uintptr, float32, float32, float32, float32, float32, float32, float32, float32, struct{ x, y float32 })))(&buf[0], 256, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, struct{ x, y float32 }{9.0, 10.0})
+				return string(buf[:strings.IndexByte(string(buf), 0)])
+			},
+			want: "1.0:2.0:3.0:4.0:5.0:6.0:7.0:8.0:9.0:10.0",
+		},
+		{
+			name: "8int_hfa2_floatregs",
+			fn:   new(func(*byte, uintptr, int32, int32, int32, int32, int32, int32, int32, int32, struct{ x, y float32 })),
+			cFn:  "test_8int_hfa2_floatregs",
+			call: func(f interface{}) string {
+				buf := make([]byte, 256)
+				(*f.(*func(*byte, uintptr, int32, int32, int32, int32, int32, int32, int32, int32, struct{ x, y float32 })))(&buf[0], 256, 1, 2, 3, 4, 5, 6, 7, 8, struct{ x, y float32 }{10.0, 20.0})
+				return string(buf[:strings.IndexByte(string(buf), 0)])
+			},
+			want: "1:2:3:4:5:6:7:8:10.0:20.0",
+		},
+		{
+			name: "8int_int_struct_int",
+			fn:   new(func(*byte, uintptr, int32, int32, int32, int32, int32, int32, int32, int32, int32, struct{ x, y int32 }, int32)),
+			cFn:  "test_8int_int_struct_int",
+			call: func(f interface{}) string {
+				buf := make([]byte, 256)
+				(*f.(*func(*byte, uintptr, int32, int32, int32, int32, int32, int32, int32, int32, int32, struct{ x, y int32 }, int32)))(&buf[0], 256, 1, 2, 3, 4, 5, 6, 7, 8, 9, struct{ x, y int32 }{10, 11}, 12)
+				return string(buf[:strings.IndexByte(string(buf), 0)])
+			},
+			want: "1:2:3:4:5:6:7:8:9:10:11:12",
+		},
+		{
+			name: "8int_hfa4_stack",
+			fn:   new(func(*byte, uintptr, int32, int32, int32, int32, int32, int32, int32, int32, struct{ x, y, z, w float32 })),
+			cFn:  "test_8int_hfa4_stack",
+			call: func(f interface{}) string {
+				buf := make([]byte, 256)
+				(*f.(*func(*byte, uintptr, int32, int32, int32, int32, int32, int32, int32, int32, struct{ x, y, z, w float32 })))(&buf[0], 256, 1, 2, 3, 4, 5, 6, 7, 8, struct{ x, y, z, w float32 }{10.0, 20.0, 30.0, 40.0})
+				return string(buf[:strings.IndexByte(string(buf), 0)])
+			},
+			want: "1:2:3:4:5:6:7:8:10.0:20.0:30.0:40.0",
+		},
+		{
+			name: "8int_mixed_struct",
+			fn:   new(func(*byte, uintptr, int32, int32, int32, int32, int32, int32, int32, int32, struct{ a int32; b float32 })),
+			cFn:  "test_8int_mixed_struct",
+			call: func(f interface{}) string {
+				buf := make([]byte, 256)
+				(*f.(*func(*byte, uintptr, int32, int32, int32, int32, int32, int32, int32, int32, struct{ a int32; b float32 })))(&buf[0], 256, 1, 2, 3, 4, 5, 6, 7, 8, struct{ a int32; b float32 }{9, 10.0})
+				return string(buf[:strings.IndexByte(string(buf), 0)])
+			},
+			want: "1:2:3:4:5:6:7:8:9:10.0",
+		},
 	}
 
 	for _, tt := range tests {
@@ -288,6 +365,13 @@ func TestABI_ArgumentPassing(t *testing.T) {
 			}
 			if tt.name == "10_float32" && (runtime.GOARCH == "386" || runtime.GOARCH == "arm" || runtime.GOARCH == "loong64") {
 				t.Skip("float32 stack arguments not yet supported on this platform")
+			}
+			// Struct tests require Darwin ARM64 or AMD64
+			if strings.HasPrefix(tt.name, "8int_") && (runtime.GOOS != "darwin" || (runtime.GOARCH != "arm64" && runtime.GOARCH != "amd64")) {
+				t.Skip("struct argument tests only supported on Darwin ARM64/AMD64")
+			}
+			if strings.HasPrefix(tt.name, "8float_") && (runtime.GOOS != "darwin" || (runtime.GOARCH != "arm64" && runtime.GOARCH != "amd64")) {
+				t.Skip("struct argument tests only supported on Darwin ARM64/AMD64")
 			}
 
 			purego.RegisterLibFunc(tt.fn, lib, tt.cFn)
