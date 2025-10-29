@@ -295,48 +295,81 @@ func RegisterFunc(fptr any, cfn uintptr) {
 				}
 				continue
 			}
-			// Check if this specific argument would go on the stack
+			// Check if we've hit the stack for Darwin ARM64
+			// When int or float registers are exhausted for primitives, we need special handling
 			isFloat := v.Kind() == reflect.Float32 || v.Kind() == reflect.Float64
 			isInt := !isFloat && v.Kind() != reflect.Struct
-			wouldBeOnStack := (isInt && numInts >= numOfIntegerRegisters()) || (isFloat && numFloats >= numOfFloatRegisters)
+			primitiveOnStack := (isInt && numInts >= numOfIntegerRegisters()) || (isFloat && numFloats >= numOfFloatRegisters)
 
-			if runtime.GOARCH == "arm64" && runtime.GOOS == "darwin" && wouldBeOnStack {
-				// Collect remaining arguments that will go on the stack.
-				// We need to bundle them into a struct to get proper C packing.
+			if runtime.GOARCH == "arm64" && runtime.GOOS == "darwin" && primitiveOnStack {
+				// Collect remaining arguments and bundle them with proper C packing
 				var stackArgs []reflect.Value
 				tempNumInts := numInts
 				tempNumFloats := numFloats
 
 				for j, val := range args[i:] {
-					// Check if this argument would go on stack
 					valIsFloat := val.Kind() == reflect.Float32 || val.Kind() == reflect.Float64
-					valIsInt := !valIsFloat && val.Kind() != reflect.Struct
-					valOnStack := (valIsInt && tempNumInts >= numOfIntegerRegisters()) || (valIsFloat && tempNumFloats >= numOfFloatRegisters)
+					valIsStruct := val.Kind() == reflect.Struct
 
-					if valOnStack {
-						if val.Kind() == reflect.String {
-							ptr := strings.CString(val.String())
-							keepAlive = append(keepAlive, ptr)
-							val = reflect.ValueOf(ptr)
-							args[i+j] = val
+					if valIsStruct {
+						// For structs, determine if they would go on stack
+						// Small HFA/HVA structs might still fit in remaining float/int registers
+						hfa := isHFA(val.Type())
+						hva := isHVA(val.Type())
+						size := val.Type().Size()
+
+						structWouldFit := false
+						if (hfa || hva || size <= 16) {
+							// Check if struct elements would fit in registers
+							if hfa && tempNumFloats+val.NumField() <= numOfFloatRegisters {
+								structWouldFit = true
+								tempNumFloats += val.NumField()
+							} else if hva && tempNumInts+val.NumField() <= numOfIntegerRegisters() {
+								structWouldFit = true
+								tempNumInts += val.NumField()
+							} else if size <= 16 {
+								// Non-HFA/HVA small structs use int registers for byte-packing
+								slotsNeeded := int((size + 7) / 8)
+								if tempNumInts+slotsNeeded <= numOfIntegerRegisters() {
+									structWouldFit = true
+									tempNumInts += slotsNeeded
+								}
+							}
 						}
-						stackArgs = append(stackArgs, val)
+
+						if structWouldFit {
+							// Process this struct through normal path (registers)
+							keepAlive = addValue(val, keepAlive, addInt, addFloat, addStack, &numInts, &numFloats, &numStack)
+						} else {
+							// Struct goes on stack - include it in bundling
+							stackArgs = append(stackArgs, val)
+						}
 					} else {
-						// This arg still fits in a register, process it normally
-						keepAlive = addValue(val, keepAlive, addInt, addFloat, addStack, &numInts, &numFloats, &numStack)
-						if valIsFloat {
-							tempNumFloats++
-						} else if valIsInt {
-							tempNumInts++
+						// Primitive argument
+						valIsInt := !valIsFloat
+						valOnStack := (valIsInt && tempNumInts >= numOfIntegerRegisters()) || (valIsFloat && tempNumFloats >= numOfFloatRegisters)
+
+						if valOnStack {
+							if val.Kind() == reflect.String {
+								ptr := strings.CString(val.String())
+								keepAlive = append(keepAlive, ptr)
+								val = reflect.ValueOf(ptr)
+								args[i+j] = val
+							}
+							stackArgs = append(stackArgs, val)
+						} else {
+							// This arg still fits in a register
+							keepAlive = addValue(val, keepAlive, addInt, addFloat, addStack, &numInts, &numFloats, &numStack)
+							if valIsFloat {
+								tempNumFloats++
+							} else if valIsInt {
+								tempNumInts++
+							}
 						}
 					}
 				}
 
-				// Now bundle the stack arguments into a struct and place them
-				// We need to use byte-level packing, so we build a struct and copy its memory.
-				// Note: We can't use placeRegisters for HVA/HFA structs here because that would
-				// place each element in a separate slot, but we need byte-level packing.
-				// So we directly copy the memory without going through placeRegisters.
+				// Bundle all stack arguments with C struct packing
 				if len(stackArgs) > 0 {
 					fields := make([]reflect.StructField, len(stackArgs))
 					for j, val := range stackArgs {
