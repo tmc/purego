@@ -47,7 +47,7 @@ import (
 
 func loadTestLib(t *testing.T) uintptr {
 	t.Helper()
-	libFileName := filepath.Join(t.TempDir(), "libabi_test.generated.so")
+	libFileName := filepath.Join(t.TempDir(), "libabitestgenerated.so")
 	if err := buildSharedLib("CC", libFileName, filepath.Join("testdata", "abitest", "abitest_gen_test.c")); err != nil {
 		t.Fatal(err)
 	}
@@ -70,6 +70,7 @@ func loadTestLib(t *testing.T) uintptr {
 func {{$testName}}(t *testing.T) {
 	{{- range $specs}}{{$test := expandSpec .}}
 	t.Run("{{$test.Name}}", func(t *testing.T) {
+		defer func() { if r := recover(); r != nil { t.Errorf("{{$test.Name}} panicked: %v", r) } }()
 		lib := loadTestLib(t)
 		var fn func({{range $i, $p := $test.Params}}{{if $i}}, {{end}}{{$p.GoType}}{{end}}) string
 		purego.RegisterLibFunc(&fn, lib, "{{$test.Name}}")
@@ -77,7 +78,7 @@ func {{$testName}}(t *testing.T) {
 		result := fn({{range $i, $p := $test.Params}}{{if $i}}, {{end}}{{$p.TestValue $i}}{{end}})
 		const want = "{{range $i, $p := $test.Params}}{{if $i}}:{{end}}{{$p.ExpectedOutput $i}}{{end}}"
 		if result != want {
-			t.Errorf("{{$test.Name}}\n  got:  %q\n  want: %q", result, want)
+			t.Errorf("\ngot:  %q\nwant: %q", result, want)
 		}
 	})
 	{{end}}

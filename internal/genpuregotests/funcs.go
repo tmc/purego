@@ -10,7 +10,9 @@ import (
 )
 
 // Template functions available in txtar templates
-var templateFuncs = template.FuncMap{"expandSpec": expandSpec}
+var templateFuncs = template.FuncMap{
+	"expandSpec": expandSpec,
+}
 
 // expandSpec converts a test specification into a full test function with all parameters expanded
 func expandSpec(spec TestSpec) TestFunc {
@@ -93,6 +95,24 @@ type TestFunc struct {
 	Params []Param
 }
 
+// CallbackReturnType returns the C return type for a callback function
+func (tf TestFunc) CallbackReturnType() string {
+	// Most callbacks return int for testing purposes
+	return "int"
+}
+
+// CallbackGoReturnType returns the Go return type for a callback function
+func (tf TestFunc) CallbackGoReturnType() string {
+	// Most callbacks return int for testing purposes
+	return "int"
+}
+
+// ExpectedReturnValue returns the expected return value for callback tests
+func (tf TestFunc) ExpectedReturnValue() string {
+	// Use a distinctive return value to verify callback execution
+	return "42"
+}
+
 // GoType returns the Go type string for this parameter (used in templates)
 func (p Param) GoType() string {
 	for _, info := range typeInfo {
@@ -109,6 +129,39 @@ func (p Param) TestValue(i int) string {
 		if info.CType == p.Type {
 			return info.TestValue(i)
 		}
+	}
+	return fmt.Sprintf("%d", i+1)
+}
+
+// TestValueC returns the C literal value for this parameter at the given index (used in callback templates)
+func (p Param) TestValueC(i int) string {
+	switch p.Type {
+	case "int8_t", "int16_t", "int32_t", "uint8_t", "uint16_t", "uint32_t":
+		return fmt.Sprintf("%d", i+1)
+	case "int64_t":
+		return fmt.Sprintf("%dLL", i+1)
+	case "uint64_t":
+		return fmt.Sprintf("%dULL", i+1)
+	case "float":
+		return fmt.Sprintf("%d.0f", i+1)
+	case "double":
+		return fmt.Sprintf("%d.0", i+1)
+	case "bool":
+		if i%2 == 1 {
+			return "1"
+		}
+		return "0"
+	case "void*":
+		if i%3 == 0 {
+			return "NULL"
+		}
+		return fmt.Sprintf("(void*)%d", i)
+	case "const char*":
+		strs := []string{`"hello"`, `"world"`, `"foo"`, `"bar"`, `"baz"`, `"qux"`, `"quux"`, `"corge"`, `"grault"`, `"garply"`, `"waldo"`, `"fred"`}
+		if i < len(strs) {
+			return strs[i]
+		}
+		return fmt.Sprintf(`"s%d"`, i)
 	}
 	return fmt.Sprintf("%d", i+1)
 }
