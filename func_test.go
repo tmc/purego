@@ -347,11 +347,20 @@ func TestABI_ArgumentPassing(t *testing.T) {
 		},
 		{
 			name: "8int_mixed_struct",
-			fn:   new(func(*byte, uintptr, int32, int32, int32, int32, int32, int32, int32, int32, struct{ a int32; b float32 })),
-			cFn:  "stack_8int_mixed_struct",
+			fn: new(func(*byte, uintptr, int32, int32, int32, int32, int32, int32, int32, int32, struct {
+				a int32
+				b float32
+			})),
+			cFn: "stack_8int_mixed_struct",
 			call: func(f interface{}) string {
 				buf := make([]byte, 256)
-				(*f.(*func(*byte, uintptr, int32, int32, int32, int32, int32, int32, int32, int32, struct{ a int32; b float32 })))(&buf[0], 256, 1, 2, 3, 4, 5, 6, 7, 8, struct{ a int32; b float32 }{9, 10.0})
+				(*f.(*func(*byte, uintptr, int32, int32, int32, int32, int32, int32, int32, int32, struct {
+					a int32
+					b float32
+				})))(&buf[0], 256, 1, 2, 3, 4, 5, 6, 7, 8, struct {
+					a int32
+					b float32
+				}{9, 10.0})
 				return string(buf[:strings.IndexByte(string(buf), 0)])
 			},
 			want: "1:2:3:4:5:6:7:8:9:10.0",

@@ -295,34 +295,8 @@ func RegisterFunc(fptr any, cfn uintptr) {
 				}
 				continue
 			}
-			// Check if we've hit the stack for Darwin ARM64
-			// When int or float registers are exhausted for primitives, we need special handling
-			isFloat := v.Kind() == reflect.Float32 || v.Kind() == reflect.Float64
-			isInt := !isFloat && v.Kind() != reflect.Struct
-			primitiveOnStack := (isInt && numInts >= numOfIntegerRegisters()) || (isFloat && numFloats >= numOfFloatRegisters)
-
-			// Also check if this is a struct that would go on stack
-			structOnStack := false
-			if runtime.GOARCH == "arm64" && runtime.GOOS == "darwin" && v.Kind() == reflect.Struct {
-				hfa := isHFA(v.Type())
-				hva := isHVA(v.Type())
-				size := v.Type().Size()
-
-				if (hfa || hva || size <= 16) {
-					if hfa && numFloats+v.NumField() > numOfFloatRegisters {
-						structOnStack = true
-					} else if hva && numInts+v.NumField() > numOfIntegerRegisters() {
-						structOnStack = true
-					} else if size <= 16 {
-						slotsNeeded := int((size + 7) / 8)
-						if numInts+slotsNeeded > numOfIntegerRegisters() {
-							structOnStack = true
-						}
-					}
-				}
-			}
-
-			if runtime.GOARCH == "arm64" && runtime.GOOS == "darwin" && (primitiveOnStack || structOnStack) {
+			// Check if we need to start Darwin ARM64 C-style stack packing
+			if runtime.GOARCH == "arm64" && runtime.GOOS == "darwin" && shouldBundleStackArgs(v, numInts, numFloats) {
 				// Collect remaining arguments and bundle them with proper C packing
 				var stackArgs []reflect.Value
 				tempNumInts := numInts
@@ -335,34 +309,11 @@ func RegisterFunc(fptr any, cfn uintptr) {
 					if valIsStruct {
 						// For structs, determine if they would go on stack
 						// Small HFA/HVA structs might still fit in remaining float/int registers
-						hfa := isHFA(val.Type())
-						hva := isHVA(val.Type())
-						size := val.Type().Size()
-
-
-						structWouldFit := false
-						if hfa {
-							// HFA: check if elements fit in float registers
-							if tempNumFloats+val.NumField() <= numOfFloatRegisters {
-								structWouldFit = true
-								tempNumFloats += val.NumField()
-							}
-						} else if hva {
-							// HVA: check if elements fit in int registers
-							if tempNumInts+val.NumField() <= numOfIntegerRegisters() {
-								structWouldFit = true
-								tempNumInts += val.NumField()
-							}
-						} else if size <= 16 {
-							// Non-HFA/HVA small structs use int registers for byte-packing
-							slotsNeeded := int((size + 7) / 8)
-							if tempNumInts+slotsNeeded <= numOfIntegerRegisters() {
-								structWouldFit = true
-								tempNumInts += slotsNeeded
-							}
-						}
+						structWouldFit, newNumInts, newNumFloats := structFitsInRegisters(val, tempNumInts, tempNumFloats)
 
 						if structWouldFit {
+							tempNumInts = newNumInts
+							tempNumFloats = newNumFloats
 							// Process this struct through normal path (registers)
 							keepAlive = addValue(val, keepAlive, addInt, addFloat, addStack, &numInts, &numFloats, &numStack)
 						} else {
@@ -443,7 +394,6 @@ func RegisterFunc(fptr any, cfn uintptr) {
 							argIndex++
 						}
 					}
-
 
 					// Copy the struct memory in 8-byte chunks to the stack
 					ptr := unsafe.Pointer(structInstance.Addr().Pointer())
