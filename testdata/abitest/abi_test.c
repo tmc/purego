@@ -2,6 +2,8 @@
 // SPDX-FileCopyrightText: 2025 The Ebitengine Authors
 
 #include <stdint.h>
+#include <inttypes.h>
+#include <stdbool.h>
 #include <assert.h>
 #include <stdio.h>
 #include <string.h>

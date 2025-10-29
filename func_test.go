@@ -199,6 +199,106 @@ func TestABI(t *testing.T) {
 	}
 }
 
+func TestABI_ArgumentPassing(t *testing.T) {
+	if runtime.GOOS == "windows" && runtime.GOARCH == "386" {
+		t.Skip("need a 32bit gcc to run this test") // TODO: find 32bit gcc for test
+	}
+	libFileName := filepath.Join(t.TempDir(), "abitest.so")
+	if err := buildSharedLib("CC", libFileName, filepath.Join("testdata", "abitest", "abi_test.c")); err != nil {
+		t.Fatal(err)
+	}
+	lib, err := load.OpenLibrary(libFileName)
+	if err != nil {
+		t.Fatalf("Dlopen(%q) failed: %v", libFileName, err)
+	}
+	t.Cleanup(func() {
+		if err := load.CloseLibrary(lib); err != nil {
+			t.Errorf("Failed to close library: %v", err)
+		}
+	})
+
+	tests := []struct {
+		name string
+		fn   interface{}
+		cFn  string
+		call func(interface{}) string
+		want string
+	}{
+		{
+			name: "10_int32_baseline",
+			fn:   new(func(*byte, uintptr, int32, int32, int32, int32, int32, int32, int32, int32, int32, int32)),
+			cFn:  "test_10_int32",
+			call: func(f interface{}) string {
+				buf := make([]byte, 256)
+				(*f.(*func(*byte, uintptr, int32, int32, int32, int32, int32, int32, int32, int32, int32, int32)))(&buf[0], 256, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10)
+				return string(buf[:strings.IndexByte(string(buf), 0)])
+			},
+			want: "1:2:3:4:5:6:7:8:9:10",
+		},
+		{
+			name: "11_int32",
+			fn:   new(func(*byte, uintptr, int32, int32, int32, int32, int32, int32, int32, int32, int32, int32, int32)),
+			cFn:  "test_11_int32",
+			call: func(f interface{}) string {
+				buf := make([]byte, 256)
+				(*f.(*func(*byte, uintptr, int32, int32, int32, int32, int32, int32, int32, int32, int32, int32, int32)))(&buf[0], 256, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11)
+				return string(buf[:strings.IndexByte(string(buf), 0)])
+			},
+			want: "1:2:3:4:5:6:7:8:9:10:11",
+		},
+		{
+			name: "10_float32",
+			fn:   new(func(*byte, uintptr, float32, float32, float32, float32, float32, float32, float32, float32, float32, float32)),
+			cFn:  "test_10_float32",
+			call: func(f interface{}) string {
+				buf := make([]byte, 256)
+				(*f.(*func(*byte, uintptr, float32, float32, float32, float32, float32, float32, float32, float32, float32, float32)))(&buf[0], 256, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0)
+				return string(buf[:strings.IndexByte(string(buf), 0)])
+			},
+			want: "1.0:2.0:3.0:4.0:5.0:6.0:7.0:8.0:9.0:10.0",
+		},
+		{
+			name: "mixed_stack_strings",
+			fn:   new(func(*byte, uintptr, int32, int32, int32, int32, int32, int32, int32, int32, string, bool, int32, string)),
+			cFn:  "test_mixed_stack_4args",
+			call: func(f interface{}) string {
+				buf := make([]byte, 256)
+				(*f.(*func(*byte, uintptr, int32, int32, int32, int32, int32, int32, int32, int32, string, bool, int32, string)))(&buf[0], 256, 1, 2, 3, 4, 5, 6, 7, 8, "foo", false, 99, "bar")
+				return string(buf[:strings.IndexByte(string(buf), 0)])
+			},
+			want: "1:2:3:4:5:6:7:8:foo:0:99:bar",
+		},
+		{
+			name: "20_int32",
+			fn:   new(func(*byte, uintptr, int32, int32, int32, int32, int32, int32, int32, int32, int32, int32, int32, int32, int32, int32, int32, int32, int32, int32, int32, int32)),
+			cFn:  "test_20_int32",
+			call: func(f interface{}) string {
+				buf := make([]byte, 512)
+				(*f.(*func(*byte, uintptr, int32, int32, int32, int32, int32, int32, int32, int32, int32, int32, int32, int32, int32, int32, int32, int32, int32, int32, int32, int32)))(&buf[0], 512, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20)
+				return string(buf[:strings.IndexByte(string(buf), 0)])
+			},
+			want: "1:2:3:4:5:6:7:8:9:10:11:12:13:14:15:16:17:18:19:20",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if tt.name == "20_int32" && (runtime.GOOS != "darwin" || runtime.GOARCH != "arm64") {
+				t.Skip("20 int32 arguments only supported on Darwin ARM64 with smart stack checking")
+			}
+			if tt.name == "10_float32" && (runtime.GOARCH == "386" || runtime.GOARCH == "arm" || runtime.GOARCH == "loong64") {
+				t.Skip("float32 stack arguments not yet supported on this platform")
+			}
+
+			purego.RegisterLibFunc(tt.fn, lib, tt.cFn)
+			got := tt.call(tt.fn)
+			if got != tt.want {
+				t.Errorf("%s\n  got:  %q\n  want: %q", tt.cFn, got, tt.want)
+			}
+		})
+	}
+}
+
 func buildSharedLib(compilerEnv, libFile string, sources ...string) error {
 	out, err := exec.Command("go", "env", compilerEnv).Output()
 	if err != nil {
