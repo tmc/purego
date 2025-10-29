@@ -299,6 +299,44 @@ func TestABI_ArgumentPassing(t *testing.T) {
 	}
 }
 
+func TestABI_TooManyArguments(t *testing.T) {
+	if runtime.GOOS != "darwin" || runtime.GOARCH != "arm64" {
+		t.Skip("This test is specific to Darwin ARM64")
+	}
+
+	libFileName := filepath.Join(t.TempDir(), "abitest.so")
+	if err := buildSharedLib("CC", libFileName, filepath.Join("testdata", "abitest", "abi_test.c")); err != nil {
+		t.Fatal(err)
+	}
+	lib, err := load.OpenLibrary(libFileName)
+	if err != nil {
+		t.Fatalf("Dlopen(%q) failed: %v", libFileName, err)
+	}
+	t.Cleanup(func() {
+		if err := load.CloseLibrary(lib); err != nil {
+			t.Errorf("Failed to close library: %v", err)
+		}
+	})
+
+	// Test that 25 int64 arguments (17 slots needed) exceeds the limit
+	t.Run("25_int64_exceeds_limit", func(t *testing.T) {
+		defer func() {
+			if r := recover(); r != nil {
+				msg := fmt.Sprint(r)
+				if !strings.Contains(msg, "too many stack arguments") {
+					t.Errorf("Expected detailed error message, got: %v", r)
+				}
+				t.Logf("Got expected panic with message: %v", r)
+			} else {
+				t.Errorf("Expected panic but didn't get one")
+			}
+		}()
+
+		var fn func(*byte, uintptr, int64, int64, int64, int64, int64, int64, int64, int64, int64, int64, int64, int64, int64, int64, int64, int64, int64, int64, int64, int64, int64, int64, int64, int64, int64)
+		purego.RegisterLibFunc(&fn, lib, "test_25_int64_exceeds")
+	})
+}
+
 func buildSharedLib(compilerEnv, libFile string, sources ...string) error {
 	out, err := exec.Command("go", "env", compilerEnv).Output()
 	if err != nil {
