@@ -1,0 +1,11 @@
+BUG: This commit reveals argument passing bugs when using int32 with 10+ arguments.
+
+Test failures:
+- RegisterFunc/Callback 10args: expected 55, got 45
+- RegisterFunc/Callback 14args: expected 105, got 71
+- RegisterFunc/CFunc 14args: expected 105, got 109 (wrong value!)
+- SyscallN/CFunc 10args: expected 55, got 45
+- SyscallN/CFunc 14args: expected 105, got 78
+- RoundTrip/10args: expected 55, got garbage
+
+This suggests purego has issues with stack packing or register assignment for 32-bit values when there are many arguments. The validation in these benchmarks caught real bugs that were hidden when using uintptr (which matches the native word size).
