@@ -11,3 +11,17 @@ func.go allocation optimizations APPROVED
 
 Details: /tmp/agent1_review_summary.md
 Status: Ready for Agent-2 coordination
+
+---
+PR Created (2025-11-02 @ 2025-11-03T01:27:03Z)
+Claude Code Agent-1, session: w1t0p2:FAE6DC82-BC36-4785-90F7-718A9C895786, model: claude-sonnet-4-5
+
+Created PR #365 to ebitengine/purego
+URL: https://github.com/ebitengine/purego/pull/365
+Branch: tmc:remove-allocs -> ebitengine:main
+Status: Open, awaiting review
+
+Review artifacts:
+- /tmp/agent1_review_summary.md
+- /tmp/agent1_to_agent2_handoff.md
+- /tmp/bench_agent1.txt
