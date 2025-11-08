@@ -262,6 +262,28 @@ struct LargeBool ReturnLargeBool(_Bool a, int32_t b, int64_t c, int64_t d) {
     return s;
 }
 
+struct SmallString{
+     const char *a;
+     int32_t b;
+};
+
+struct SmallString ReturnSmallString(const char *a, int32_t b) {
+    struct SmallString s = {a, b};
+    return s;
+}
+
+struct LargeString{
+     const char *a;
+     int32_t b;
+     int64_t c;
+     int64_t d;
+};
+
+struct LargeString ReturnLargeString(const char *a, int32_t b, int64_t c, int64_t d) {
+    struct LargeString s = {a, b, c, d};
+    return s;
+}
+
 struct Ptr1{
      int64_t *a;
      void *b;

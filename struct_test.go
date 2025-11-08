@@ -832,6 +832,32 @@ func TestRegisterFunc_structReturns(t *testing.T) {
 		}
 	}
 	{
+		type SmallString struct {
+			a string
+			b int32
+		}
+		var ReturnSmallString func(a string, b int32) SmallString
+		purego.RegisterLibFunc(&ReturnSmallString, lib, "ReturnSmallString")
+		expected := SmallString{"hello", 42}
+		if ret := ReturnSmallString("hello", 42); ret != expected {
+			t.Fatalf("ReturnSmallString returned %+v wanted %+v", ret, expected)
+		}
+	}
+	{
+		type LargeString struct {
+			a string
+			b int32
+			c int64
+			d int64
+		}
+		var ReturnLargeString func(a string, b int32, c int64, d int64) LargeString
+		purego.RegisterLibFunc(&ReturnLargeString, lib, "ReturnLargeString")
+		expected := LargeString{"world", 123, 456789, 987654321}
+		if ret := ReturnLargeString("world", 123, 456789, 987654321); ret != expected {
+			t.Fatalf("ReturnLargeString returned %+v wanted %+v", ret, expected)
+		}
+	}
+	{
 		type Ptr1 struct {
 			a *int64
 			b unsafe.Pointer
