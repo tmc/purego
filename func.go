@@ -17,11 +17,6 @@ import (
 	"github.com/ebitengine/purego/internal/xreflect"
 )
 
-const (
-	align8ByteMask = 7 // Mask for 8-byte alignment: (val + 7) &^ 7
-	align8ByteSize = 8 // 8-byte alignment boundary
-)
-
 var thePool = sync.Pool{New: func() any {
 	return new(syscall15Args)
 }}
@@ -135,9 +130,8 @@ func RegisterFunc(fptr any, cfn uintptr) {
 	{
 		// this code checks how many registers and stack this function will use
 		// to avoid crashing with too many arguments
-		var ints int
-		var floats int
-		var stack int
+		var numInts, numFloats int
+		var stackBytes int
 		for i := 0; i < ty.NumIn(); i++ {
 			arg := ty.In(i)
 			switch arg.Kind() {
@@ -157,20 +151,20 @@ func RegisterFunc(fptr any, cfn uintptr) {
 			case reflect.String, reflect.Uintptr, reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64,
 				reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64, reflect.Ptr, reflect.UnsafePointer,
 				reflect.Slice, reflect.Bool:
-				if ints < numOfIntegerRegisters() {
-					ints++
+				if numInts < numOfIntegerRegisters() {
+					numInts++
 				} else {
-					stack++
+					stackBytes++
 				}
 			case reflect.Float32, reflect.Float64:
 				const is32bit = unsafe.Sizeof(uintptr(0)) == 4
 				if is32bit {
 					panic("purego: floats only supported on 64bit platforms")
 				}
-				if floats < numOfFloatRegisters {
-					floats++
+				if numFloats < numOfFloatRegisters {
+					numFloats++
 				} else {
-					stack++
+					stackBytes++
 				}
 			case reflect.Struct:
 				if runtime.GOOS != "darwin" || (runtime.GOARCH != "amd64" && runtime.GOARCH != "arm64") {
@@ -180,15 +174,15 @@ func RegisterFunc(fptr any, cfn uintptr) {
 					continue
 				}
 				addInt := func(u uintptr) {
-					ints++
+					numInts++
 				}
 				addFloat := func(u uintptr) {
-					floats++
+					numFloats++
 				}
 				addStack := func(u uintptr) {
-					stack++
+					stackBytes++
 				}
-				_ = addStruct(reflect.New(arg).Elem(), &ints, &floats, &stack, addInt, addFloat, addStack, nil)
+				_ = addStruct(reflect.New(arg).Elem(), &numInts, &numFloats, &stackBytes, addInt, addFloat, addStack, nil)
 			default:
 				panic("purego: unsupported kind " + arg.Kind().String())
 			}
@@ -202,20 +196,21 @@ func RegisterFunc(fptr any, cfn uintptr) {
 			if runtime.GOARCH == "amd64" && outType.Size() > maxRegAllocStructSize {
 				// on amd64 if struct is bigger than 16 bytes allocate the return struct
 				// and pass it in as a hidden first argument.
-				ints++
+				numInts++
 			}
 		}
 
 		sizeOfStack := maxArgs - numOfIntegerRegisters()
-		// On Darwin ARM64, use byte-based validation since arguments pack efficiently
+		// On Darwin ARM64, use byte-based validation since arguments pack efficiently.
+		// See: https://developer.apple.com/documentation/xcode/writing-arm64-code-for-apple-platforms
 		if runtime.GOOS == "darwin" && runtime.GOARCH == "arm64" {
-			stackBytes := estimateStackBytes(ty)
+			actualStackBytes := estimateStackBytes(ty)
 			maxStackBytes := sizeOfStack * 8
-			if stackBytes > maxStackBytes {
+			if actualStackBytes > maxStackBytes {
 				panic("purego: too many stack arguments")
 			}
 		} else {
-			if stack > sizeOfStack {
+			if stackBytes > sizeOfStack {
 				panic("purego: too many stack arguments")
 			}
 		}
@@ -473,10 +468,6 @@ func checkStructFieldsSupported(ty reflect.Type) {
 	}
 }
 
-func roundUpTo8(val uintptr) uintptr {
-	return (val + align8ByteMask) &^ align8ByteMask
-}
-
 func numOfIntegerRegisters() int {
 	switch runtime.GOARCH {
 	case "arm64", "loong64":
@@ -488,32 +479,4 @@ func numOfIntegerRegisters() int {
 		// integer registers it is fine to return the maxArgs
 		return maxArgs
 	}
-}
-
-// estimateStackBytes estimates stack bytes needed for Darwin ARM64 validation.
-// This is a conservative estimate used only for early error detection.
-func estimateStackBytes(ty reflect.Type) int {
-	numInts, numFloats := 0, 0
-	stackBytes := 0
-
-	for i := 0; i < ty.NumIn(); i++ {
-		arg := ty.In(i)
-		size := int(arg.Size())
-
-		// Check if this goes to register or stack
-		usesInt := arg.Kind() != reflect.Float32 && arg.Kind() != reflect.Float64
-		if usesInt && numInts < numOfIntegerRegisters() {
-			numInts++
-		} else if !usesInt && numFloats < numOfFloatRegisters {
-			numFloats++
-		} else {
-			// Goes to stack - accumulate total bytes
-			stackBytes += size
-		}
-	}
-	// Round total to 8-byte boundary
-	if stackBytes > 0 && stackBytes%align8ByteSize != 0 {
-		stackBytes = (stackBytes + align8ByteMask) &^ align8ByteMask
-	}
-	return stackBytes
 }

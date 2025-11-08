@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-FileCopyrightText: 2025 The Ebitengine Authors
 
+//go:build darwin && arm64
+
 package purego
 
 import (
@@ -249,4 +251,64 @@ func bundleStackArgs(stackArgs []reflect.Value, addStack func(uintptr)) {
 		}
 		addStack(chunk)
 	}
+}
+
+// estimateStackBytes estimates stack bytes needed for Darwin ARM64 validation.
+// This is a conservative estimate used only for early error detection.
+// See: https://developer.apple.com/documentation/xcode/writing-arm64-code-for-apple-platforms
+func estimateStackBytes(ty reflect.Type) int {
+	numInts, numFloats := 0, 0
+	stackBytes := 0
+
+	for i := 0; i < ty.NumIn(); i++ {
+		arg := ty.In(i)
+		size := int(arg.Size())
+
+		// Handle struct arguments with special register allocation rules
+		if arg.Kind() == reflect.Struct {
+			hfa := isHFA(arg)
+			hva := isHVA(arg)
+
+			if hfa {
+				// HFA: check if elements fit in float registers
+				fieldsNeeded := arg.NumField()
+				if numFloats+fieldsNeeded <= numOfFloatRegisters {
+					numFloats += fieldsNeeded
+					continue
+				}
+			} else if hva {
+				// HVA: check if elements fit in int registers
+				fieldsNeeded := arg.NumField()
+				if numInts+fieldsNeeded <= numOfIntegerRegisters() {
+					numInts += fieldsNeeded
+					continue
+				}
+			} else if size <= 16 {
+				// Non-HFA/HVA small structs use int registers for byte-packing
+				slotsNeeded := int((size + align8ByteMask) / align8ByteSize)
+				if numInts+slotsNeeded <= numOfIntegerRegisters() {
+					numInts += slotsNeeded
+					continue
+				}
+			}
+			// Struct doesn't fit in registers, goes to stack
+			stackBytes += size
+		} else {
+			// Handle primitive types
+			usesInt := arg.Kind() != reflect.Float32 && arg.Kind() != reflect.Float64
+			if usesInt && numInts < numOfIntegerRegisters() {
+				numInts++
+			} else if !usesInt && numFloats < numOfFloatRegisters {
+				numFloats++
+			} else {
+				// Goes to stack - accumulate total bytes
+				stackBytes += size
+			}
+		}
+	}
+	// Round total to 8-byte boundary
+	if stackBytes > 0 && stackBytes%align8ByteSize != 0 {
+		stackBytes = (stackBytes + align8ByteMask) &^ align8ByteMask
+	}
+	return stackBytes
 }

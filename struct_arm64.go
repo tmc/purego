@@ -9,6 +9,15 @@ import (
 	"unsafe"
 )
 
+const (
+	align8ByteMask = 7 // Mask for 8-byte alignment: (val + 7) &^ 7
+	align8ByteSize = 8 // 8-byte alignment boundary
+)
+
+func roundUpTo8(val uintptr) uintptr {
+	return (val + align8ByteMask) &^ align8ByteMask
+}
+
 func getStruct(outType reflect.Type, syscall syscall15Args) (v reflect.Value) {
 	outSize := outType.Size()
 	switch {

@@ -32,3 +32,9 @@ func collectStackArgs(args []reflect.Value, startIdx int, numInts, numFloats int
 func bundleStackArgs(stackArgs []reflect.Value, addStack func(uintptr)) {
 	panic("purego: bundleStackArgs should not be called on non-Darwin ARM64")
 }
+
+// estimateStackBytes is not used on non-Darwin ARM64 platforms.
+// This stub exists for compilation but should never be called.
+func estimateStackBytes(ty reflect.Type) int {
+	panic("purego: estimateStackBytes should not be called on non-Darwin ARM64")
+}
