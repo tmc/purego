@@ -789,6 +789,20 @@ func TestRegisterFunc_structReturns(t *testing.T) {
 		}
 	}
 	{
+		type Mixed5 struct {
+			a *byte
+			b byte
+			c float32
+			d uint32
+		}
+		var ReturnMixed5 func(m Mixed5) Mixed5
+		purego.RegisterLibFunc(&ReturnMixed5, lib, "ReturnMixed5")
+		expected := Mixed5{&[]byte("Travis\x00")[0], 1, 7.2, 9}
+		if ret := ReturnMixed5(expected); ret != expected {
+			t.Fatalf("ReturnMixed5 returned %+v wanted %+v", ret, expected)
+		}
+	}
+	{
 		type Ptr1 struct {
 			a *int64
 			b unsafe.Pointer

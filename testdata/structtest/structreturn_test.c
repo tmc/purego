@@ -227,6 +227,17 @@ struct Mixed4 ReturnMixed4(double a, uint32_t b, float c) {
     return s;
 }
 
+struct Mixed5 {
+    const char *a;
+    uint8_t b;
+    float c;
+    uint32_t d;
+};
+
+struct Mixed5 ReturnMixed5(struct Mixed5 m) {
+    return m;
+}
+
 struct Ptr1{
      int64_t *a;
      void *b;
