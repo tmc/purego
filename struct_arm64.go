@@ -7,9 +7,16 @@ import (
 	"math"
 	"reflect"
 	"unsafe"
+
+	"github.com/ebitengine/purego/internal/strings"
 )
 
 func getStruct(outType reflect.Type, syscall syscall15Args) (v reflect.Value) {
+	// Check if struct has string fields - if so, we need special handling
+	if hasStringFields(outType) {
+		return getStructWithStrings(outType, syscall)
+	}
+
 	outSize := outType.Size()
 	switch {
 	case outSize == 0:
@@ -58,6 +65,57 @@ func getStruct(outType reflect.Type, syscall syscall15Args) (v reflect.Value) {
 	}
 }
 
+func getStructWithStrings(outType reflect.Type, syscall syscall15Args) reflect.Value {
+	outSize := calculateCStructSize(outType)
+
+	var cdata []byte
+	if outSize == 0 {
+		return reflect.New(outType).Elem()
+	} else if outSize <= 16 {
+		cdata = make([]byte, 16)
+		*(*uintptr)(unsafe.Pointer(&cdata[0])) = syscall.a1
+		*(*uintptr)(unsafe.Pointer(&cdata[8])) = syscall.a2
+	} else {
+		ptr := *(*unsafe.Pointer)(unsafe.Pointer(&syscall.arm64_r8))
+		cdata = unsafe.Slice((*byte)(ptr), outSize)
+	}
+
+	result := reflect.New(outType)
+	resultPtr := unsafe.Pointer(result.Pointer())
+	cOffset := uintptr(0)
+
+	for i := 0; i < outType.NumField(); i++ {
+		fieldInfo := outType.Field(i)
+		fieldType := fieldInfo.Type
+		goOffset := fieldInfo.Offset
+
+		switch fieldType.Kind() {
+		case reflect.String:
+			cStrPtr := *(*uintptr)(unsafe.Pointer(&cdata[cOffset]))
+			goStrPtr := unsafe.Add(resultPtr, goOffset)
+			if cStrPtr != 0 {
+				goStr := strings.GoString(cStrPtr)
+				*(*string)(goStrPtr) = goStr
+			}
+			cOffset += 8
+		case reflect.Int32:
+			cOffset = (cOffset + 3) & ^uintptr(3)
+			val := *(*int32)(unsafe.Pointer(&cdata[cOffset]))
+			*(*int32)(unsafe.Add(resultPtr, goOffset)) = val
+			cOffset += 4
+		case reflect.Int64:
+			cOffset = (cOffset + 7) & ^uintptr(7)
+			val := *(*int64)(unsafe.Pointer(&cdata[cOffset]))
+			*(*int64)(unsafe.Add(resultPtr, goOffset)) = val
+			cOffset += 8
+		default:
+			panic("purego: unsupported field type in struct with strings: " + fieldType.Kind().String())
+		}
+	}
+
+	return result.Elem()
+}
+
 // https://github.com/ARM-software/abi-aa/blob/main/sysvabi64/sysvabi64.rst
 const (
 	_NO_CLASS = 0b00
@@ -79,14 +137,14 @@ func addStruct(v reflect.Value, numInts, numFloats, numStack *int, addInt, addFl
 			*numInts = numOfIntegerRegisters()
 		}
 
-		placeRegisters(v, addFloat, addInt)
+		keepAlive = placeRegisters(v, addFloat, addInt, keepAlive)
 	} else {
 		keepAlive = placeStack(v, keepAlive, addInt)
 	}
 	return keepAlive // the struct was allocated so don't panic
 }
 
-func placeRegisters(v reflect.Value, addFloat func(uintptr), addInt func(uintptr)) {
+func placeRegisters(v reflect.Value, addFloat func(uintptr), addInt func(uintptr), keepAlive []any) []any {
 	var val uint64
 	var shift byte
 	var flushed bool
@@ -182,6 +240,14 @@ func placeRegisters(v reflect.Value, addFloat func(uintptr), addInt func(uintptr
 				shift = 0
 				flushed = true
 				class = _NO_CLASS
+			case reflect.String:
+				// Convert Go string to C string pointer
+				ptr := strings.CString(f.String())
+				keepAlive = append(keepAlive, ptr)
+				addInt(uintptr(unsafe.Pointer(ptr)))
+				shift = 0
+				flushed = true
+				class = _NO_CLASS
 			case reflect.Array:
 				place(f)
 			default:
@@ -197,6 +263,7 @@ func placeRegisters(v reflect.Value, addFloat func(uintptr), addInt func(uintptr
 			addInt(uintptr(val))
 		}
 	}
+	return keepAlive
 }
 
 func placeStack(v reflect.Value, keepAlive []any, addInt func(uintptr)) []any {

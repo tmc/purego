@@ -68,108 +68,55 @@ func getStruct(outType reflect.Type, syscall syscall15Args) (v reflect.Value) {
 	}
 }
 
-func hasStringFields(t reflect.Type) bool {
-	for i := 0; i < t.NumField(); i++ {
-		if t.Field(i).Type.Kind() == reflect.String {
-			return true
-		}
-	}
-	return false
-}
-
 func getStructWithStrings(outType reflect.Type, syscall syscall15Args) reflect.Value {
-	// Calculate the C struct size (strings are pointers, not Go strings)
 	cSize := calculateCStructSize(outType)
 
-	// Get the raw data from registers or memory based on C struct size
-	var rawData []uintptr
+	var cdata []byte
 	if cSize == 0 {
 		return reflect.New(outType).Elem()
-	} else if cSize <= 8 {
-		rawData = []uintptr{syscall.a1}
 	} else if cSize <= 16 {
-		rawData = []uintptr{syscall.a1, syscall.a2}
+		cdata = make([]byte, 16)
+		*(*uintptr)(unsafe.Pointer(&cdata[0])) = syscall.a1
+		*(*uintptr)(unsafe.Pointer(&cdata[8])) = syscall.a2
 	} else {
-		// Large struct passed by pointer
 		ptr := *(*unsafe.Pointer)(unsafe.Pointer(&syscall.a1))
-		// Read all fields from memory
-		rawData = make([]uintptr, (cSize+7)/8)
-		for i := range rawData {
-			rawData[i] = *(*uintptr)(unsafe.Add(ptr, i*8))
-		}
+		cdata = unsafe.Slice((*byte)(ptr), cSize)
 	}
 
-	// Reconstruct the Go struct, converting char* to string
-	result := reflect.New(outType).Elem()
-	dataIdx := 0
-	bitOffset := 0
+	result := reflect.New(outType)
+	resultPtr := unsafe.Pointer(result.Pointer())
+	cOffset := uintptr(0)
 
 	for i := 0; i < outType.NumField(); i++ {
-		field := result.Field(i)
-		fieldType := outType.Field(i).Type
+		fieldInfo := outType.Field(i)
+		fieldType := fieldInfo.Type
+		goOffset := fieldInfo.Offset
 
 		switch fieldType.Kind() {
 		case reflect.String:
-			// Read pointer from raw data
-			var ptr uintptr
-			if dataIdx < len(rawData) {
-				ptr = rawData[dataIdx]
+			cStrPtr := *(*uintptr)(unsafe.Pointer(&cdata[cOffset]))
+			goStrPtr := unsafe.Add(resultPtr, goOffset)
+			if cStrPtr != 0 {
+				goStr := strings.GoString(cStrPtr)
+				*(*string)(goStrPtr) = goStr
 			}
-			dataIdx++
-			bitOffset = 0
-			if ptr != 0 {
-				field.SetString(strings.GoString(ptr))
-			}
+			cOffset += 8
 		case reflect.Int32:
-			// Read int32
-			var val int32
-			if bitOffset == 0 && dataIdx < len(rawData) {
-				val = int32(rawData[dataIdx] & 0xFFFFFFFF)
-				bitOffset = 32
-			} else if bitOffset == 32 && dataIdx < len(rawData) {
-				val = int32(rawData[dataIdx] >> 32)
-				dataIdx++
-				bitOffset = 0
-			}
-			field.SetInt(int64(val))
+			cOffset = (cOffset + 3) & ^uintptr(3)
+			val := *(*int32)(unsafe.Pointer(&cdata[cOffset]))
+			*(*int32)(unsafe.Add(resultPtr, goOffset)) = val
+			cOffset += 4
 		case reflect.Int64:
-			// Read int64
-			if bitOffset != 0 {
-				dataIdx++
-				bitOffset = 0
-			}
-			if dataIdx < len(rawData) {
-				field.SetInt(int64(rawData[dataIdx]))
-			}
-			dataIdx++
+			cOffset = (cOffset + 7) & ^uintptr(7)
+			val := *(*int64)(unsafe.Pointer(&cdata[cOffset]))
+			*(*int64)(unsafe.Add(resultPtr, goOffset)) = val
+			cOffset += 8
 		default:
 			panic("purego: unsupported field type in struct with strings: " + fieldType.Kind().String())
 		}
 	}
 
-	return result
-}
-
-func calculateCStructSize(t reflect.Type) uintptr {
-	var size uintptr
-	for i := 0; i < t.NumField(); i++ {
-		fieldType := t.Field(i).Type
-		switch fieldType.Kind() {
-		case reflect.String:
-			size += 8 // pointer size
-		case reflect.Int32:
-			size = (size + 3) & ^uintptr(3) // align to 4 bytes
-			size += 4
-		case reflect.Int64:
-			size = (size + 7) & ^uintptr(7) // align to 8 bytes
-			size += 8
-		default:
-			panic("purego: unsupported field type in C struct size calculation")
-		}
-	}
-	// Round up to 8-byte alignment
-	size = (size + 7) & ^uintptr(7)
-	return size
+	return result.Elem()
 }
 
 func isAllFloats(ty reflect.Type) bool {
@@ -384,6 +331,6 @@ func placeStack(v reflect.Value, addStack func(uintptr), keepAlive []any) []any 
 	return keepAlive
 }
 
-func placeRegisters(v reflect.Value, addFloat func(uintptr), addInt func(uintptr)) {
+func placeRegisters(v reflect.Value, addFloat func(uintptr), addInt func(uintptr), keepAlive []any) []any {
 	panic("purego: not needed on amd64")
 }
