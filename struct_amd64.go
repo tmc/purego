@@ -7,9 +7,16 @@ import (
 	"math"
 	"reflect"
 	"unsafe"
+
+	"github.com/ebitengine/purego/internal/strings"
 )
 
 func getStruct(outType reflect.Type, syscall syscall15Args) (v reflect.Value) {
+	// Check if struct has string fields - if so, we need special handling
+	if hasStringFields(outType) {
+		return getStructWithStrings(outType, syscall)
+	}
+
 	outSize := outType.Size()
 	switch {
 	case outSize == 0:
@@ -61,6 +68,110 @@ func getStruct(outType reflect.Type, syscall syscall15Args) (v reflect.Value) {
 	}
 }
 
+func hasStringFields(t reflect.Type) bool {
+	for i := 0; i < t.NumField(); i++ {
+		if t.Field(i).Type.Kind() == reflect.String {
+			return true
+		}
+	}
+	return false
+}
+
+func getStructWithStrings(outType reflect.Type, syscall syscall15Args) reflect.Value {
+	// Calculate the C struct size (strings are pointers, not Go strings)
+	cSize := calculateCStructSize(outType)
+
+	// Get the raw data from registers or memory based on C struct size
+	var rawData []uintptr
+	if cSize == 0 {
+		return reflect.New(outType).Elem()
+	} else if cSize <= 8 {
+		rawData = []uintptr{syscall.a1}
+	} else if cSize <= 16 {
+		rawData = []uintptr{syscall.a1, syscall.a2}
+	} else {
+		// Large struct passed by pointer
+		ptr := *(*unsafe.Pointer)(unsafe.Pointer(&syscall.a1))
+		// Read all fields from memory
+		rawData = make([]uintptr, (cSize+7)/8)
+		for i := range rawData {
+			rawData[i] = *(*uintptr)(unsafe.Add(ptr, i*8))
+		}
+	}
+
+	// Reconstruct the Go struct, converting char* to string
+	result := reflect.New(outType).Elem()
+	dataIdx := 0
+	bitOffset := 0
+
+	for i := 0; i < outType.NumField(); i++ {
+		field := result.Field(i)
+		fieldType := outType.Field(i).Type
+
+		switch fieldType.Kind() {
+		case reflect.String:
+			// Read pointer from raw data
+			var ptr uintptr
+			if dataIdx < len(rawData) {
+				ptr = rawData[dataIdx]
+			}
+			dataIdx++
+			bitOffset = 0
+			if ptr != 0 {
+				field.SetString(strings.GoString(ptr))
+			}
+		case reflect.Int32:
+			// Read int32
+			var val int32
+			if bitOffset == 0 && dataIdx < len(rawData) {
+				val = int32(rawData[dataIdx] & 0xFFFFFFFF)
+				bitOffset = 32
+			} else if bitOffset == 32 && dataIdx < len(rawData) {
+				val = int32(rawData[dataIdx] >> 32)
+				dataIdx++
+				bitOffset = 0
+			}
+			field.SetInt(int64(val))
+		case reflect.Int64:
+			// Read int64
+			if bitOffset != 0 {
+				dataIdx++
+				bitOffset = 0
+			}
+			if dataIdx < len(rawData) {
+				field.SetInt(int64(rawData[dataIdx]))
+			}
+			dataIdx++
+		default:
+			panic("purego: unsupported field type in struct with strings: " + fieldType.Kind().String())
+		}
+	}
+
+	return result
+}
+
+func calculateCStructSize(t reflect.Type) uintptr {
+	var size uintptr
+	for i := 0; i < t.NumField(); i++ {
+		fieldType := t.Field(i).Type
+		switch fieldType.Kind() {
+		case reflect.String:
+			size += 8 // pointer size
+		case reflect.Int32:
+			size = (size + 3) & ^uintptr(3) // align to 4 bytes
+			size += 4
+		case reflect.Int64:
+			size = (size + 7) & ^uintptr(7) // align to 8 bytes
+			size += 8
+		default:
+			panic("purego: unsupported field type in C struct size calculation")
+		}
+	}
+	// Round up to 8-byte alignment
+	size = (size + 7) & ^uintptr(7)
+	return size
+}
+
 func isAllFloats(ty reflect.Type) bool {
 	for i := 0; i < ty.NumField(); i++ {
 		f := ty.Field(i)
@@ -92,21 +203,22 @@ func addStruct(v reflect.Value, numInts, numFloats, numStack *int, addInt, addFl
 
 	// if greater than 64 bytes place on stack
 	if v.Type().Size() > 8*8 {
-		placeStack(v, addStack)
-		return keepAlive
+		return placeStack(v, addStack, keepAlive)
 	}
 	var (
 		savedNumFloats = *numFloats
 		savedNumInts   = *numInts
 		savedNumStack  = *numStack
 	)
-	placeOnStack := postMerger(v.Type()) || !tryPlaceRegister(v, addFloat, addInt)
+	var ok bool
+	ok, keepAlive = tryPlaceRegister(v, addFloat, addInt, keepAlive)
+	placeOnStack := postMerger(v.Type()) || !ok
 	if placeOnStack {
 		// reset any values placed in registers
 		*numFloats = savedNumFloats
 		*numInts = savedNumInts
 		*numStack = savedNumStack
-		placeStack(v, addStack)
+		keepAlive = placeStack(v, addStack, keepAlive)
 	}
 	return keepAlive
 }
@@ -123,8 +235,9 @@ func postMerger(t reflect.Type) (passInMemory bool) {
 	return true // Go does not have an SSE/SSEUP type so this is always true
 }
 
-func tryPlaceRegister(v reflect.Value, addFloat func(uintptr), addInt func(uintptr)) (ok bool) {
+func tryPlaceRegister(v reflect.Value, addFloat func(uintptr), addInt func(uintptr), keepAlive []any) (ok bool, newKeepAlive []any) {
 	ok = true
+	newKeepAlive = keepAlive
 	var val uint64
 	var shift byte // # of bits to shift
 	var flushed bool
@@ -217,6 +330,12 @@ func tryPlaceRegister(v reflect.Value, addFloat func(uintptr), addInt func(uintp
 				val = uint64(math.Float64bits(f.Float()))
 				shift = 64
 				class = _SSE
+			case reflect.String:
+				ptr := strings.CString(f.String())
+				newKeepAlive = append(newKeepAlive, ptr)
+				val = uint64(uintptr(unsafe.Pointer(ptr)))
+				shift = 64
+				class = _INTEGER
 			case reflect.Array:
 				place(f)
 			default:
@@ -235,13 +354,17 @@ func tryPlaceRegister(v reflect.Value, addFloat func(uintptr), addInt func(uintp
 
 	place(v)
 	flushIfNeeded()
-	return ok
+	return ok, newKeepAlive
 }
 
-func placeStack(v reflect.Value, addStack func(uintptr)) {
+func placeStack(v reflect.Value, addStack func(uintptr), keepAlive []any) []any {
 	for i := 0; i < v.Type().NumField(); i++ {
 		f := v.Field(i)
 		switch f.Kind() {
+		case reflect.String:
+			ptr := strings.CString(f.String())
+			keepAlive = append(keepAlive, ptr)
+			addStack(uintptr(unsafe.Pointer(ptr)))
 		case reflect.Pointer, reflect.UnsafePointer:
 			addStack(f.Pointer())
 		case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
@@ -253,11 +376,12 @@ func placeStack(v reflect.Value, addStack func(uintptr)) {
 		case reflect.Float64:
 			addStack(uintptr(math.Float64bits(f.Float())))
 		case reflect.Struct:
-			placeStack(f, addStack)
+			keepAlive = placeStack(f, addStack, keepAlive)
 		default:
 			panic("purego: unsupported kind " + f.Kind().String())
 		}
 	}
+	return keepAlive
 }
 
 func placeRegisters(v reflect.Value, addFloat func(uintptr), addInt func(uintptr)) {
