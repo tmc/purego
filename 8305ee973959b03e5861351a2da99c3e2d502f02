@@ -1,0 +1,7 @@
+commit: 8305ee9
+date: 2025-11-14T19:58:45Z
+claude-code-version: /Users/tmc/.local/homebrew/bin/bash: line 1: claude-code: command not found
+model: claude-sonnet-4-5-20250929
+tty: not a tty
+pid: 41636
+session: w1t1p0:AFA6656F-4E17-45CB-A021-59621A3B773D
