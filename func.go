@@ -316,28 +316,31 @@ func RegisterFunc(fptr any, cfn uintptr) {
 				cfn,
 				sysargs[0], sysargs[1], sysargs[2], sysargs[3], sysargs[4], sysargs[5],
 				sysargs[6], sysargs[7], sysargs[8], sysargs[9], sysargs[10], sysargs[11],
-				sysargs[12], sysargs[13], sysargs[14],
+				sysargs[12], sysargs[13], sysargs[14], sysargs[15], sysargs[16], sysargs[17],
+				sysargs[18], sysargs[19],
 				floats[0], floats[1], floats[2], floats[3], floats[4], floats[5], floats[6], floats[7],
 				0,
 			}
-			runtime_cgocall(syscall15XABI0, unsafe.Pointer(syscall))
+			runtime_cgocall(syscall20XABI0, unsafe.Pointer(syscall))
 		} else if runtime.GOARCH == "arm64" || runtime.GOOS != "windows" {
 			// Use the normal arm64 calling convention even on Windows
 			*syscall = syscall15Args{
 				cfn,
 				sysargs[0], sysargs[1], sysargs[2], sysargs[3], sysargs[4], sysargs[5],
 				sysargs[6], sysargs[7], sysargs[8], sysargs[9], sysargs[10], sysargs[11],
-				sysargs[12], sysargs[13], sysargs[14],
+				sysargs[12], sysargs[13], sysargs[14], sysargs[15], sysargs[16], sysargs[17],
+				sysargs[18], sysargs[19],
 				floats[0], floats[1], floats[2], floats[3], floats[4], floats[5], floats[6], floats[7],
 				arm64_r8,
 			}
-			runtime_cgocall(syscall15XABI0, unsafe.Pointer(syscall))
+			runtime_cgocall(syscall20XABI0, unsafe.Pointer(syscall))
 		} else {
 			*syscall = syscall15Args{}
 			// This is a fallback for Windows amd64, 386, and arm. Note this may not support floats
-			syscall.a1, syscall.a2, _ = syscall_syscall15X(cfn, sysargs[0], sysargs[1], sysargs[2], sysargs[3], sysargs[4],
+			syscall.a1, syscall.a2, _ = syscall_syscall20X(cfn, sysargs[0], sysargs[1], sysargs[2], sysargs[3], sysargs[4],
 				sysargs[5], sysargs[6], sysargs[7], sysargs[8], sysargs[9], sysargs[10], sysargs[11],
-				sysargs[12], sysargs[13], sysargs[14])
+				sysargs[12], sysargs[13], sysargs[14], sysargs[15], sysargs[16], sysargs[17],
+				sysargs[18], sysargs[19])
 			syscall.f1 = syscall.a2 // on amd64 a2 stores the float return. On 32bit platforms floats aren't support
 		}
 		if ty.NumOut() == 0 {

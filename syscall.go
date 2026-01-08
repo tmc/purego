@@ -13,14 +13,14 @@ package purego
 type CDecl struct{}
 
 const (
-	maxArgs             = 15
+	maxArgs             = 20
 	numOfFloatRegisters = 8 // arm64 and amd64 both have 8 float registers
 )
 
 type syscall15Args struct {
-	fn, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15 uintptr
-	f1, f2, f3, f4, f5, f6, f7, f8                                       uintptr
-	arm64_r8                                                             uintptr
+	fn, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16, a17, a18, a19, a20 uintptr
+	f1, f2, f3, f4, f5, f6, f7, f8                                                                uintptr
+	arm64_r8                                                                                      uintptr
 }
 
 // SyscallN takes fn, a C function pointer and a list of arguments as uintptr.
@@ -52,5 +52,5 @@ func SyscallN(fn uintptr, args ...uintptr) (r1, r2, err uintptr) {
 	// add padding so there is no out-of-bounds slicing
 	var tmp [maxArgs]uintptr
 	copy(tmp[:], args)
-	return syscall_syscall15X(fn, tmp[0], tmp[1], tmp[2], tmp[3], tmp[4], tmp[5], tmp[6], tmp[7], tmp[8], tmp[9], tmp[10], tmp[11], tmp[12], tmp[13], tmp[14])
+	return syscall_syscall20X(fn, tmp[0], tmp[1], tmp[2], tmp[3], tmp[4], tmp[5], tmp[6], tmp[7], tmp[8], tmp[9], tmp[10], tmp[11], tmp[12], tmp[13], tmp[14], tmp[15], tmp[16], tmp[17], tmp[18], tmp[19])
 }

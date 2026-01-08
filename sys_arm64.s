@@ -7,11 +7,11 @@
 #include "go_asm.h"
 #include "funcdata.h"
 
-#define STACK_SIZE 64
+#define STACK_SIZE 112
 #define PTR_ADDRESS (STACK_SIZE - 8)
 
-// syscall15X calls a function in libc on behalf of the syscall package.
-// syscall15X takes a pointer to a struct like:
+// syscall20X calls a function in libc on behalf of the syscall package.
+// syscall20X takes a pointer to a struct like:
 // struct {
 //	fn    uintptr
 //	a1    uintptr
@@ -23,21 +23,26 @@
 //	a7    uintptr
 //	a8    uintptr
 //	a9    uintptr
-//	a10    uintptr
-//	a11    uintptr
-//	a12    uintptr
-//	a13    uintptr
-//	a14    uintptr
-//	a15    uintptr
+//	a10   uintptr
+//	a11   uintptr
+//	a12   uintptr
+//	a13   uintptr
+//	a14   uintptr
+//	a15   uintptr
+//	a16   uintptr
+//	a17   uintptr
+//	a18   uintptr
+//	a19   uintptr
+//	a20   uintptr
 //	r1    uintptr
 //	r2    uintptr
 //	err   uintptr
 // }
-// syscall15X must be called on the g0 stack with the
+// syscall20X must be called on the g0 stack with the
 // C calling convention (use libcCall).
-GLOBL ·syscall15XABI0(SB), NOPTR|RODATA, $8
-DATA ·syscall15XABI0(SB)/8, $syscall15X(SB)
-TEXT syscall15X(SB), NOSPLIT, $0
+GLOBL ·syscall20XABI0(SB), NOPTR|RODATA, $8
+DATA ·syscall20XABI0(SB)/8, $syscall20X(SB)
+TEXT syscall20X(SB), NOSPLIT, $0
 	SUB  $STACK_SIZE, RSP     // push structure pointer
 	MOVD R0, PTR_ADDRESS(RSP)
 	MOVD R0, R9
@@ -75,6 +80,16 @@ TEXT syscall15X(SB), NOSPLIT, $0
 	MOVD R10, 40(RSP)               // push a14 onto stack
 	MOVD syscall15Args_a15(R9), R10
 	MOVD R10, 48(RSP)               // push a15 onto stack
+	MOVD syscall15Args_a16(R9), R10
+	MOVD R10, 56(RSP)               // push a16 onto stack
+	MOVD syscall15Args_a17(R9), R10
+	MOVD R10, 64(RSP)               // push a17 onto stack
+	MOVD syscall15Args_a18(R9), R10
+	MOVD R10, 72(RSP)               // push a18 onto stack
+	MOVD syscall15Args_a19(R9), R10
+	MOVD R10, 80(RSP)               // push a19 onto stack
+	MOVD syscall15Args_a20(R9), R10
+	MOVD R10, 88(RSP)               // push a20 onto stack
 
 	MOVD syscall15Args_fn(R9), R10 // fn
 	BL   (R10)

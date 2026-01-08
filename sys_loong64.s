@@ -7,11 +7,11 @@
 #include "go_asm.h"
 #include "funcdata.h"
 
-#define STACK_SIZE 64
+#define STACK_SIZE 112
 #define PTR_ADDRESS (STACK_SIZE - 8)
 
-// syscall15X calls a function in libc on behalf of the syscall package.
-// syscall15X takes a pointer to a struct like:
+// syscall20X calls a function in libc on behalf of the syscall package.
+// syscall20X takes a pointer to a struct like:
 // struct {
 //	fn    uintptr
 //	a1    uintptr
@@ -23,21 +23,26 @@
 //	a7    uintptr
 //	a8    uintptr
 //	a9    uintptr
-//	a10    uintptr
-//	a11    uintptr
-//	a12    uintptr
-//	a13    uintptr
-//	a14    uintptr
-//	a15    uintptr
+//	a10   uintptr
+//	a11   uintptr
+//	a12   uintptr
+//	a13   uintptr
+//	a14   uintptr
+//	a15   uintptr
+//	a16   uintptr
+//	a17   uintptr
+//	a18   uintptr
+//	a19   uintptr
+//	a20   uintptr
 //	r1    uintptr
 //	r2    uintptr
 //	err   uintptr
 // }
-// syscall15X must be called on the g0 stack with the
+// syscall20X must be called on the g0 stack with the
 // C calling convention (use libcCall).
-GLOBL ·syscall15XABI0(SB), NOPTR|RODATA, $8
-DATA ·syscall15XABI0(SB)/8, $syscall15X(SB)
-TEXT syscall15X(SB), NOSPLIT, $0
+GLOBL ·syscall20XABI0(SB), NOPTR|RODATA, $8
+DATA ·syscall20XABI0(SB)/8, $syscall20X(SB)
+TEXT syscall20X(SB), NOSPLIT, $0
 	// push structure pointer
 	SUBV	$STACK_SIZE, R3
 	MOVV	R4, PTR_ADDRESS(R3)
@@ -61,7 +66,7 @@ TEXT syscall15X(SB), NOSPLIT, $0
 	MOVV	syscall15Args_a7(R13), R10	// a7
 	MOVV	syscall15Args_a8(R13), R11	// a8
 
-	// push a9-a15 onto stack
+	// push a9-a20 onto stack
 	MOVV	syscall15Args_a9(R13), R12
 	MOVV	R12, 0(R3)
 	MOVV	syscall15Args_a10(R13), R12
@@ -76,6 +81,16 @@ TEXT syscall15X(SB), NOSPLIT, $0
 	MOVV	R12, 40(R3)
 	MOVV	syscall15Args_a15(R13), R12
 	MOVV	R12, 48(R3)
+	MOVV	syscall15Args_a16(R13), R12
+	MOVV	R12, 56(R3)
+	MOVV	syscall15Args_a17(R13), R12
+	MOVV	R12, 64(R3)
+	MOVV	syscall15Args_a18(R13), R12
+	MOVV	R12, 72(R3)
+	MOVV	syscall15Args_a19(R13), R12
+	MOVV	R12, 80(R3)
+	MOVV	syscall15Args_a20(R13), R12
+	MOVV	R12, 88(R3)
 
 	MOVV	syscall15Args_fn(R13), R12
 	JAL	(R12)

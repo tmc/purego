@@ -12,19 +12,19 @@ import (
 	"unsafe"
 )
 
-var syscall15XABI0 uintptr
+var syscall20XABI0 uintptr
 
-func syscall_syscall15X(fn, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15 uintptr) (r1, r2, err uintptr) {
+func syscall_syscall20X(fn, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16, a17, a18, a19, a20 uintptr) (r1, r2, err uintptr) {
 	args := thePool.Get().(*syscall15Args)
 	defer thePool.Put(args)
 
 	*args = syscall15Args{
-		fn, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15,
+		fn, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16, a17, a18, a19, a20,
 		a1, a2, a3, a4, a5, a6, a7, a8,
 		0,
 	}
 
-	runtime_cgocall(syscall15XABI0, unsafe.Pointer(args))
+	runtime_cgocall(syscall20XABI0, unsafe.Pointer(args))
 	return args.a1, args.a2, 0
 }
 
