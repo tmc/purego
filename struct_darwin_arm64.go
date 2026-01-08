@@ -34,34 +34,11 @@ func copyStruct8ByteChunks(ptr unsafe.Pointer, size uintptr, addChunk func(uintp
 
 // placeRegisters implements Darwin ARM64 calling convention for struct arguments.
 //
-// For HFA/HVA structs, each element must go in a separate register (or stack slot for elements
-// that don't fit in registers). We use placeRegistersArm64 for this.
-//
-// For non-HFA/HVA structs, Darwin uses byte-level packing. We copy the struct memory in
-// 8-byte chunks, which works correctly for both register and stack placement.
+// This delegates to placeRegistersArm64 which properly handles each field by type,
+// routing integers to addInt and floats to addFloat. This is essential for the
+// synthetic struct case in func.go where remaining primitive arguments are bundled.
 func placeRegisters(v reflect.Value, addFloat func(uintptr), addInt func(uintptr)) {
-	// Check if this is an HFA/HVA
-	hfa := isHFA(v.Type())
-	hva := isHVA(v.Type())
-
-	// For HFA/HVA structs, use the standard ARM64 logic which places each element separately
-	if hfa || hva {
-		placeRegistersArm64(v, addFloat, addInt)
-		return
-	}
-
-	// For non-HFA/HVA structs, use byte-level copying
-	// If the value is not addressable, create an addressable copy
-	if !v.CanAddr() {
-		addressable := reflect.New(v.Type()).Elem()
-		addressable.Set(v)
-		v = addressable
-	}
-	ptr := unsafe.Pointer(v.Addr().Pointer())
-	size := v.Type().Size()
-
-	// Copy the struct memory in 8-byte chunks
-	copyStruct8ByteChunks(ptr, size, addInt)
+	placeRegistersArm64(v, addFloat, addInt)
 }
 
 // shouldBundleStackArgs determines if we need to start C-style packing for
