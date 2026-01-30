@@ -352,6 +352,32 @@ func FastCall6F1(cfn, a1, a2, a3, a4, a5, a6, f1 uintptr) uintptr {
 	return r
 }
 
+// FastCall7F1 calls a C function with 7 integer args and 1 float arg.
+func FastCall7F1(cfn, a1, a2, a3, a4, a5, a6, a7, f1 uintptr) uintptr {
+	s := thePool.Get().(*syscall15Args)
+	s.fn = cfn
+	s.a1, s.a2, s.a3, s.a4, s.a5, s.a6, s.a7, s.a8 = a1, a2, a3, a4, a5, a6, a7, 0
+	s.f1, s.f2, s.f3, s.f4, s.f5, s.f6, s.f7, s.f8 = f1, 0, 0, 0, 0, 0, 0, 0
+	s.arm64_r8 = 0
+	runtime_cgocall(syscall15XABI0, unsafe.Pointer(s))
+	r := s.a1
+	thePool.Put(s)
+	return r
+}
+
+// FastCall8F1 calls a C function with 8 integer args and 1 float arg.
+func FastCall8F1(cfn, a1, a2, a3, a4, a5, a6, a7, a8, f1 uintptr) uintptr {
+	s := thePool.Get().(*syscall15Args)
+	s.fn = cfn
+	s.a1, s.a2, s.a3, s.a4, s.a5, s.a6, s.a7, s.a8 = a1, a2, a3, a4, a5, a6, a7, a8
+	s.f1, s.f2, s.f3, s.f4, s.f5, s.f6, s.f7, s.f8 = f1, 0, 0, 0, 0, 0, 0, 0
+	s.arm64_r8 = 0
+	runtime_cgocall(syscall15XABI0, unsafe.Pointer(s))
+	r := s.a1
+	thePool.Put(s)
+	return r
+}
+
 // FastCall5F2 calls a C function with 5 integer args and 2 float args.
 func FastCall5F2(cfn, a1, a2, a3, a4, a5, f1, f2 uintptr) uintptr {
 	s := thePool.Get().(*syscall15Args)
