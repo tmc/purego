@@ -45,12 +45,12 @@ func getStruct(outType reflect.Type, syscall syscall15Args) (v reflect.Value) {
 	return reflect.NewAt(outType, *(*unsafe.Pointer)(unsafe.Pointer(&syscall.a1))).Elem()
 }
 
-func placeRegisters(v reflect.Value, addFloat func(uintptr), addInt func(uintptr)) {
+func placeRegisters(v reflect.Value, addFloat func(uintptr), addInt func(uintptr), keepAlive []any) []any {
 	// TODO: For ARM32, just pass the struct data directly
 	// This is a simplified implementation
 	size := v.Type().Size()
 	if size == 0 {
-		return
+		return keepAlive
 	}
 	ptr := unsafe.Pointer(v.UnsafeAddr())
 	if size <= 4 {
@@ -59,6 +59,7 @@ func placeRegisters(v reflect.Value, addFloat func(uintptr), addInt func(uintptr
 		addInt(*(*uintptr)(ptr))
 		addInt(*(*uintptr)(unsafe.Add(ptr, 4)))
 	}
+	return keepAlive
 }
 
 // shouldBundleStackArgs always returns false on arm

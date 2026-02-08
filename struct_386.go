@@ -13,7 +13,7 @@ func getStruct(outType reflect.Type, syscall syscall15Args) (v reflect.Value) {
 	panic("purego: struct returns are not supported")
 }
 
-func placeRegisters(v reflect.Value, addFloat func(uintptr), addInt func(uintptr)) {
+func placeRegisters(v reflect.Value, addFloat func(uintptr), addInt func(uintptr), keepAlive []any) []any {
 	panic("purego: placeRegisters not implemented on 386")
 }
 

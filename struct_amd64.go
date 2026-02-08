@@ -92,21 +92,22 @@ func addStruct(v reflect.Value, numInts, numFloats, numStack *int, addInt, addFl
 
 	// if greater than 64 bytes place on stack
 	if v.Type().Size() > 8*8 {
-		placeStack(v, addStack)
-		return keepAlive
+		return placeStack(v, addStack, keepAlive)
 	}
 	var (
 		savedNumFloats = *numFloats
 		savedNumInts   = *numInts
 		savedNumStack  = *numStack
 	)
-	placeOnStack := postMerger(v.Type()) || !tryPlaceRegister(v, addFloat, addInt)
+	var ok bool
+	ok, keepAlive = tryPlaceRegister(v, addFloat, addInt, keepAlive)
+	placeOnStack := postMerger(v.Type()) || !ok
 	if placeOnStack {
 		// reset any values placed in registers
 		*numFloats = savedNumFloats
 		*numInts = savedNumInts
 		*numStack = savedNumStack
-		placeStack(v, addStack)
+		keepAlive = placeStack(v, addStack, keepAlive)
 	}
 	return keepAlive
 }
@@ -123,8 +124,9 @@ func postMerger(t reflect.Type) (passInMemory bool) {
 	return true // Go does not have an SSE/SSEUP type so this is always true
 }
 
-func tryPlaceRegister(v reflect.Value, addFloat func(uintptr), addInt func(uintptr)) (ok bool) {
+func tryPlaceRegister(v reflect.Value, addFloat func(uintptr), addInt func(uintptr), keepAlive []any) (ok bool, newKeepAlive []any) {
 	ok = true
+	newKeepAlive = keepAlive
 	var val uint64
 	var shift byte // # of bits to shift
 	var flushed bool
@@ -235,10 +237,10 @@ func tryPlaceRegister(v reflect.Value, addFloat func(uintptr), addInt func(uintp
 
 	place(v)
 	flushIfNeeded()
-	return ok
+	return ok, newKeepAlive
 }
 
-func placeStack(v reflect.Value, addStack func(uintptr)) {
+func placeStack(v reflect.Value, addStack func(uintptr), keepAlive []any) []any {
 	// Copy the struct as a contiguous block of memory in eightbyte (8-byte)
 	// chunks. The x86-64 ABI requires structs passed on the stack to be
 	// laid out exactly as in memory, including padding and field packing
@@ -256,9 +258,10 @@ func placeStack(v reflect.Value, addStack func(uintptr)) {
 		chunk := *(*uintptr)(unsafe.Add(ptr, off))
 		addStack(chunk)
 	}
+	return keepAlive
 }
 
-func placeRegisters(v reflect.Value, addFloat func(uintptr), addInt func(uintptr)) {
+func placeRegisters(v reflect.Value, addFloat func(uintptr), addInt func(uintptr), keepAlive []any) []any {
 	panic("purego: placeRegisters not implemented on amd64")
 }
 

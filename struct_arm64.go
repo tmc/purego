@@ -84,22 +84,21 @@ func addStruct(v reflect.Value, numInts, numFloats, numStack *int, addInt, addFl
 			*numInts = numOfIntegerRegisters()
 		}
 
-		placeRegisters(v, addFloat, addInt)
+		keepAlive = placeRegisters(v, addFloat, addInt, keepAlive)
 	} else {
 		keepAlive = placeStack(v, keepAlive, addInt)
 	}
-	return keepAlive // the struct was allocated so don't panic
+	return keepAlive
 }
 
-func placeRegisters(v reflect.Value, addFloat func(uintptr), addInt func(uintptr)) {
+func placeRegisters(v reflect.Value, addFloat func(uintptr), addInt func(uintptr), keepAlive []any) []any {
 	if runtime.GOOS == "darwin" {
-		placeRegistersDarwin(v, addFloat, addInt)
-		return
+		return placeRegistersDarwin(v, addFloat, addInt, keepAlive)
 	}
-	placeRegistersArm64(v, addFloat, addInt)
+	return placeRegistersArm64(v, addFloat, addInt, keepAlive)
 }
 
-func placeRegistersArm64(v reflect.Value, addFloat func(uintptr), addInt func(uintptr)) {
+func placeRegistersArm64(v reflect.Value, addFloat func(uintptr), addInt func(uintptr), keepAlive []any) []any {
 	var val uint64
 	var shift byte
 	var flushed bool
@@ -210,6 +209,7 @@ func placeRegistersArm64(v reflect.Value, addFloat func(uintptr), addInt func(ui
 			addInt(uintptr(val))
 		}
 	}
+	return keepAlive
 }
 
 func placeStack(v reflect.Value, keepAlive []any, addInt func(uintptr)) []any {
@@ -327,7 +327,7 @@ func copyStruct8ByteChunks(ptr unsafe.Pointer, size uintptr, addChunk func(uintp
 //
 // For non-HFA/HVA structs, Darwin uses byte-level packing. We copy the struct memory in
 // 8-byte chunks, which works correctly for both register and stack placement.
-func placeRegistersDarwin(v reflect.Value, addFloat func(uintptr), addInt func(uintptr)) {
+func placeRegistersDarwin(v reflect.Value, addFloat func(uintptr), addInt func(uintptr), keepAlive []any) []any {
 	if runtime.GOOS != "darwin" {
 		panic("purego: placeRegistersDarwin should only be called on darwin")
 	}
@@ -337,8 +337,7 @@ func placeRegistersDarwin(v reflect.Value, addFloat func(uintptr), addInt func(u
 
 	// For HFA/HVA structs, use the standard ARM64 logic which places each element separately
 	if hfa || hva {
-		placeRegistersArm64(v, addFloat, addInt)
-		return
+		return placeRegistersArm64(v, addFloat, addInt, keepAlive)
 	}
 
 	// For non-HFA/HVA structs, use byte-level copying
@@ -351,6 +350,7 @@ func placeRegistersDarwin(v reflect.Value, addFloat func(uintptr), addInt func(u
 	ptr := unsafe.Pointer(v.Addr().Pointer())
 	size := v.Type().Size()
 	copyStruct8ByteChunks(ptr, size, addInt)
+	return keepAlive
 }
 
 // shouldBundleStackArgs determines if we need to start C-style packing for
