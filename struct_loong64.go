@@ -7,9 +7,14 @@ import (
 	"math"
 	"reflect"
 	"unsafe"
+
+	"github.com/ebitengine/purego/internal/strings"
 )
 
 func getStruct(outType reflect.Type, syscall syscall15Args) (v reflect.Value) {
+	if hasStringFields(outType) {
+		return getStructWithStrings(outType, syscall)
+	}
 	outSize := outType.Size()
 	switch {
 	case outSize == 0:
@@ -48,6 +53,50 @@ func getStruct(outType reflect.Type, syscall syscall15Args) (v reflect.Value) {
 	}
 }
 
+// getStructWithStrings handles struct return values that contain string fields on loong64.
+func getStructWithStrings(outType reflect.Type, syscall syscall15Args) reflect.Value {
+	v := reflect.New(outType)
+	goPtr := v.UnsafePointer()
+	cSize := calculateCStructSize(outType)
+
+	var regs [2]uintptr
+	var ptr unsafe.Pointer
+	if cSize <= 16 {
+		regs = [2]uintptr{syscall.a1, syscall.a2}
+		ptr = unsafe.Pointer(&regs[0])
+	} else {
+		ptr = *(*unsafe.Pointer)(unsafe.Pointer(&syscall.a1))
+	}
+
+	cOffset := uintptr(0)
+	for i := 0; i < outType.NumField(); i++ {
+		field := outType.Field(i)
+		var fieldSize, fieldAlign uintptr
+		if field.Type.Kind() == reflect.String {
+			fieldSize = 8
+			fieldAlign = 8
+		} else {
+			fieldSize = field.Type.Size()
+			fieldAlign = uintptr(field.Type.Align())
+		}
+		cOffset = (cOffset + fieldAlign - 1) &^ (fieldAlign - 1)
+
+		fieldPtr := unsafe.Add(ptr, cOffset)
+		if field.Type.Kind() == reflect.String {
+			charPtr := *(*uintptr)(fieldPtr)
+			goStr := strings.GoString(charPtr)
+			*(*string)(unsafe.Add(goPtr, field.Offset)) = goStr
+		} else {
+			dst := unsafe.Add(goPtr, field.Offset)
+			for j := uintptr(0); j < fieldSize; j++ {
+				*(*byte)(unsafe.Add(dst, j)) = *(*byte)(unsafe.Add(fieldPtr, j))
+			}
+		}
+		cOffset += fieldSize
+	}
+	return v.Elem()
+}
+
 const (
 	_NO_CLASS = 0b00
 	_FLOAT    = 0b01
@@ -59,7 +108,7 @@ func addStruct(v reflect.Value, numInts, numFloats, numStack *int, addInt, addFl
 		return keepAlive
 	}
 
-	if size := v.Type().Size(); size <= 16 {
+	if size := getStructABISize(v.Type()); size <= 16 {
 		keepAlive = placeRegisters(v, addFloat, addInt, keepAlive)
 	} else {
 		keepAlive = placeStack(v, keepAlive, addInt)
@@ -158,6 +207,13 @@ func placeRegisters(v reflect.Value, addFloat func(uintptr), addInt func(uintptr
 				class = _NO_CLASS
 			case reflect.Ptr, reflect.UnsafePointer:
 				addInt(f.Pointer())
+				shift = 0
+				flushed = true
+				class = _NO_CLASS
+			case reflect.String:
+				ptr := strings.CString(f.String())
+				keepAlive = append(keepAlive, ptr)
+				addInt(uintptr(unsafe.Pointer(ptr)))
 				shift = 0
 				flushed = true
 				class = _NO_CLASS

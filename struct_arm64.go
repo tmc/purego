@@ -15,6 +15,9 @@ import (
 )
 
 func getStruct(outType reflect.Type, syscall syscall15Args) (v reflect.Value) {
+	if hasStringFields(outType) {
+		return getStructWithStrings(outType, syscall)
+	}
 	outSize := outType.Size()
 	switch {
 	case outSize == 0:
@@ -63,6 +66,52 @@ func getStruct(outType reflect.Type, syscall syscall15Args) (v reflect.Value) {
 	}
 }
 
+// getStructWithStrings handles struct return values that contain string fields on arm64.
+func getStructWithStrings(outType reflect.Type, syscall syscall15Args) reflect.Value {
+	v := reflect.New(outType)
+	goPtr := v.UnsafePointer()
+	cSize := calculateCStructSize(outType)
+
+	var regs [2]uintptr
+	var ptr unsafe.Pointer
+	if cSize <= 16 {
+		regs = [2]uintptr{syscall.a1, syscall.a2}
+		ptr = unsafe.Pointer(&regs[0])
+	} else {
+		// large struct returned via arm64_r8
+		ptr = *(*unsafe.Pointer)(unsafe.Pointer(&syscall.arm64_r8))
+	}
+
+	cOffset := uintptr(0)
+	for i := 0; i < outType.NumField(); i++ {
+		field := outType.Field(i)
+		var fieldSize, fieldAlign uintptr
+		if field.Type.Kind() == reflect.String {
+			fieldSize = 8
+			fieldAlign = 8
+		} else {
+			fieldSize = field.Type.Size()
+			fieldAlign = uintptr(field.Type.Align())
+		}
+		cOffset = (cOffset + fieldAlign - 1) &^ (fieldAlign - 1)
+
+		fieldPtr := unsafe.Add(ptr, cOffset)
+		if field.Type.Kind() == reflect.String {
+			charPtr := *(*uintptr)(fieldPtr)
+			goStr := strings.GoString(charPtr)
+			*(*string)(unsafe.Add(goPtr, field.Offset)) = goStr
+		} else {
+			// Copy raw bytes from C layout to Go struct at the correct Go offset
+			dst := unsafe.Add(goPtr, field.Offset)
+			for j := uintptr(0); j < fieldSize; j++ {
+				*(*byte)(unsafe.Add(dst, j)) = *(*byte)(unsafe.Add(fieldPtr, j))
+			}
+		}
+		cOffset += fieldSize
+	}
+	return v.Elem()
+}
+
 // https://github.com/ARM-software/abi-aa/blob/main/sysvabi64/sysvabi64.rst
 const (
 	_NO_CLASS = 0b00
@@ -75,7 +124,10 @@ func addStruct(v reflect.Value, numInts, numFloats, numStack *int, addInt, addFl
 		return keepAlive
 	}
 
-	if hva, hfa, size := isHVA(v.Type()), isHFA(v.Type()), v.Type().Size(); hva || hfa || size <= 16 {
+	// For structs with string fields, use the C ABI size for register/stack decisions
+	abiSize := getStructABISize(v.Type())
+
+	if hva, hfa := isHVA(v.Type()), isHFA(v.Type()); hva || hfa || abiSize <= 16 {
 		// if this doesn't fit entirely in registers then
 		// each element goes onto the stack
 		if hfa && *numFloats+v.NumField() > numOfFloatRegisters() {
@@ -194,6 +246,13 @@ func placeRegistersArm64(v reflect.Value, addFloat func(uintptr), addInt func(ui
 				shift = 0
 				flushed = true
 				class = _NO_CLASS
+			case reflect.String:
+				ptr := strings.CString(f.String())
+				keepAlive = append(keepAlive, ptr)
+				addInt(uintptr(unsafe.Pointer(ptr)))
+				shift = 0
+				flushed = true
+				class = _NO_CLASS
 			case reflect.Array:
 				place(f)
 			default:
@@ -213,6 +272,9 @@ func placeRegistersArm64(v reflect.Value, addFloat func(uintptr), addInt func(ui
 }
 
 func placeStack(v reflect.Value, keepAlive []any, addInt func(uintptr)) []any {
+	if hasStringFields(v.Type()) {
+		return placeStackWithStrings(v, keepAlive, addInt)
+	}
 	// Struct is too big to be placed in registers.
 	// Copy to heap and place the pointer in register
 	ptrStruct := reflect.New(v.Type())
@@ -220,6 +282,52 @@ func placeStack(v reflect.Value, keepAlive []any, addInt func(uintptr)) []any {
 	ptr := ptrStruct.Elem().Addr().UnsafePointer()
 	keepAlive = append(keepAlive, ptr)
 	addInt(uintptr(ptr))
+	return keepAlive
+}
+
+// placeStackWithStrings builds a C-layout struct on the heap for structs with string fields.
+func placeStackWithStrings(v reflect.Value, keepAlive []any, addInt func(uintptr)) []any {
+	if !v.CanAddr() {
+		addressable := reflect.New(v.Type()).Elem()
+		addressable.Set(v)
+		v = addressable
+	}
+	structPtr := v.Addr().UnsafePointer()
+
+	cSize := calculateCStructSize(v.Type())
+	buf := make([]byte, cSize)
+	cOffset := uintptr(0)
+
+	for i := 0; i < v.Type().NumField(); i++ {
+		field := v.Type().Field(i)
+		var fieldSize, fieldAlign uintptr
+		if field.Type.Kind() == reflect.String {
+			fieldSize = 8
+			fieldAlign = 8
+		} else {
+			fieldSize = field.Type.Size()
+			fieldAlign = uintptr(field.Type.Align())
+		}
+		cOffset = (cOffset + fieldAlign - 1) &^ (fieldAlign - 1)
+
+		dst := unsafe.Pointer(&buf[cOffset])
+		if field.Type.Kind() == reflect.String {
+			goStr := *(*string)(unsafe.Add(structPtr, field.Offset))
+			ptr := strings.CString(goStr)
+			keepAlive = append(keepAlive, ptr)
+			*(*uintptr)(dst) = uintptr(unsafe.Pointer(ptr))
+		} else {
+			src := unsafe.Add(structPtr, field.Offset)
+			for j := uintptr(0); j < fieldSize; j++ {
+				*(*byte)(unsafe.Add(dst, j)) = *(*byte)(unsafe.Add(src, j))
+			}
+		}
+		cOffset += fieldSize
+	}
+
+	// Keep the buffer alive and pass its pointer
+	keepAlive = append(keepAlive, buf)
+	addInt(uintptr(unsafe.Pointer(&buf[0])))
 	return keepAlive
 }
 
@@ -340,6 +448,11 @@ func placeRegistersDarwin(v reflect.Value, addFloat func(uintptr), addInt func(u
 		return placeRegistersArm64(v, addFloat, addInt, keepAlive)
 	}
 
+	// For structs with string fields, build C-layout buffer first
+	if hasStringFields(v.Type()) {
+		return placeRegistersDarwinWithStrings(v, addInt, keepAlive)
+	}
+
 	// For non-HFA/HVA structs, use byte-level copying
 	// If the value is not addressable, create an addressable copy
 	if !v.CanAddr() {
@@ -350,6 +463,54 @@ func placeRegistersDarwin(v reflect.Value, addFloat func(uintptr), addInt func(u
 	ptr := unsafe.Pointer(v.Addr().Pointer())
 	size := v.Type().Size()
 	copyStruct8ByteChunks(ptr, size, addInt)
+	return keepAlive
+}
+
+// placeRegistersDarwinWithStrings handles Darwin ARM64 register placement for structs
+// with string fields by building a C-layout buffer.
+func placeRegistersDarwinWithStrings(v reflect.Value, addInt func(uintptr), keepAlive []any) []any {
+	// Make sure the struct is addressable so we can read fields via raw pointer
+	if !v.CanAddr() {
+		addressable := reflect.New(v.Type()).Elem()
+		addressable.Set(v)
+		v = addressable
+	}
+	structPtr := v.Addr().UnsafePointer()
+
+	cSize := calculateCStructSize(v.Type())
+	buf := make([]byte, cSize)
+	cOffset := uintptr(0)
+
+	for i := 0; i < v.Type().NumField(); i++ {
+		field := v.Type().Field(i)
+		var fieldSize, fieldAlign uintptr
+		if field.Type.Kind() == reflect.String {
+			fieldSize = 8
+			fieldAlign = 8
+		} else {
+			fieldSize = field.Type.Size()
+			fieldAlign = uintptr(field.Type.Align())
+		}
+		cOffset = (cOffset + fieldAlign - 1) &^ (fieldAlign - 1)
+
+		dst := unsafe.Pointer(&buf[cOffset])
+		if field.Type.Kind() == reflect.String {
+			// Read string header from Go struct memory via unsafe
+			goStr := *(*string)(unsafe.Add(structPtr, field.Offset))
+			ptr := strings.CString(goStr)
+			keepAlive = append(keepAlive, ptr)
+			*(*uintptr)(dst) = uintptr(unsafe.Pointer(ptr))
+		} else {
+			// Copy field bytes from Go struct memory using field offset
+			src := unsafe.Add(structPtr, field.Offset)
+			for j := uintptr(0); j < fieldSize; j++ {
+				*(*byte)(unsafe.Add(dst, j)) = *(*byte)(unsafe.Add(src, j))
+			}
+		}
+		cOffset += fieldSize
+	}
+
+	copyStruct8ByteChunks(unsafe.Pointer(&buf[0]), cSize, addInt)
 	return keepAlive
 }
 

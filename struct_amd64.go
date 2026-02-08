@@ -7,9 +7,14 @@ import (
 	"math"
 	"reflect"
 	"unsafe"
+
+	"github.com/ebitengine/purego/internal/strings"
 )
 
 func getStruct(outType reflect.Type, syscall syscall15Args) (v reflect.Value) {
+	if hasStringFields(outType) {
+		return getStructWithStrings(outType, syscall)
+	}
 	outSize := outType.Size()
 	switch {
 	case outSize == 0:
@@ -59,6 +64,54 @@ func getStruct(outType reflect.Type, syscall syscall15Args) (v reflect.Value) {
 		// weird pointer dereference to circumvent go vet
 		return reflect.NewAt(outType, *(*unsafe.Pointer)(unsafe.Pointer(&syscall.a1))).Elem()
 	}
+}
+
+// getStructWithStrings handles struct return values that contain string fields.
+// C returns char* pointers which must be converted to Go strings.
+func getStructWithStrings(outType reflect.Type, syscall syscall15Args) reflect.Value {
+	v := reflect.New(outType)
+	goPtr := v.UnsafePointer()
+	cSize := calculateCStructSize(outType)
+
+	var regs [2]uintptr
+	var ptr unsafe.Pointer
+	if cSize <= 16 {
+		regs = [2]uintptr{syscall.a1, syscall.a2}
+		ptr = unsafe.Pointer(&regs[0])
+	} else {
+		// large struct returned via hidden pointer
+		ptr = *(*unsafe.Pointer)(unsafe.Pointer(&syscall.a1))
+	}
+
+	// Walk struct fields and reconstruct from C layout
+	cOffset := uintptr(0)
+	for i := 0; i < outType.NumField(); i++ {
+		field := outType.Field(i)
+		var fieldSize, fieldAlign uintptr
+		if field.Type.Kind() == reflect.String {
+			fieldSize = 8
+			fieldAlign = 8
+		} else {
+			fieldSize = field.Type.Size()
+			fieldAlign = uintptr(field.Type.Align())
+		}
+		cOffset = (cOffset + fieldAlign - 1) &^ (fieldAlign - 1)
+
+		fieldPtr := unsafe.Add(ptr, cOffset)
+		if field.Type.Kind() == reflect.String {
+			charPtr := *(*uintptr)(fieldPtr)
+			goStr := strings.GoString(charPtr)
+			*(*string)(unsafe.Add(goPtr, field.Offset)) = goStr
+		} else {
+			// Copy raw bytes from C layout to Go struct at the correct Go offset
+			dst := unsafe.Add(goPtr, field.Offset)
+			for j := uintptr(0); j < fieldSize; j++ {
+				*(*byte)(unsafe.Add(dst, j)) = *(*byte)(unsafe.Add(fieldPtr, j))
+			}
+		}
+		cOffset += fieldSize
+	}
+	return v.Elem()
 }
 
 func isAllFloats(ty reflect.Type) bool {
@@ -175,6 +228,12 @@ func tryPlaceRegister(v reflect.Value, addFloat func(uintptr), addInt func(uintp
 				val = uint64(f.Pointer())
 				shift = 64
 				class = _INTEGER
+			case reflect.String:
+				ptr := strings.CString(f.String())
+				newKeepAlive = append(newKeepAlive, ptr)
+				val = uint64(uintptr(unsafe.Pointer(ptr)))
+				shift = 64
+				class = _INTEGER
 			case reflect.Int8:
 				val |= uint64(f.Int()&0xFF) << shift
 				shift += 8
@@ -241,6 +300,9 @@ func tryPlaceRegister(v reflect.Value, addFloat func(uintptr), addInt func(uintp
 }
 
 func placeStack(v reflect.Value, addStack func(uintptr), keepAlive []any) []any {
+	if hasStringFields(v.Type()) {
+		return placeStackWithStrings(v, addStack, keepAlive)
+	}
 	// Copy the struct as a contiguous block of memory in eightbyte (8-byte)
 	// chunks. The x86-64 ABI requires structs passed on the stack to be
 	// laid out exactly as in memory, including padding and field packing
@@ -256,6 +318,57 @@ func placeStack(v reflect.Value, addStack func(uintptr), keepAlive []any) []any 
 	size := v.Type().Size()
 	for off := uintptr(0); off < size; off += 8 {
 		chunk := *(*uintptr)(unsafe.Add(ptr, off))
+		addStack(chunk)
+	}
+	return keepAlive
+}
+
+// placeStackWithStrings builds a C-layout buffer for structs with string fields,
+// converting Go strings to C char* pointers, then copies eightbyte chunks to the stack.
+func placeStackWithStrings(v reflect.Value, addStack func(uintptr), keepAlive []any) []any {
+	// Make sure the struct is addressable so we can read fields via raw pointer
+	if !v.CanAddr() {
+		tmp := reflect.New(v.Type()).Elem()
+		tmp.Set(v)
+		v = tmp
+	}
+	structPtr := v.Addr().UnsafePointer()
+
+	cSize := calculateCStructSize(v.Type())
+	buf := make([]byte, cSize)
+	cOffset := uintptr(0)
+
+	for i := 0; i < v.Type().NumField(); i++ {
+		field := v.Type().Field(i)
+		var fieldSize, fieldAlign uintptr
+		if field.Type.Kind() == reflect.String {
+			fieldSize = 8
+			fieldAlign = 8
+		} else {
+			fieldSize = field.Type.Size()
+			fieldAlign = uintptr(field.Type.Align())
+		}
+		cOffset = (cOffset + fieldAlign - 1) &^ (fieldAlign - 1)
+
+		dst := unsafe.Pointer(&buf[cOffset])
+		if field.Type.Kind() == reflect.String {
+			goStr := *(*string)(unsafe.Add(structPtr, field.Offset))
+			ptr := strings.CString(goStr)
+			keepAlive = append(keepAlive, ptr)
+			*(*uintptr)(dst) = uintptr(unsafe.Pointer(ptr))
+		} else {
+			// Copy field bytes from Go struct memory using field offset
+			src := unsafe.Add(structPtr, field.Offset)
+			for j := uintptr(0); j < fieldSize; j++ {
+				*(*byte)(unsafe.Add(dst, j)) = *(*byte)(unsafe.Add(src, j))
+			}
+		}
+		cOffset += fieldSize
+	}
+
+	// Copy buffer as eightbyte chunks
+	for off := uintptr(0); off < cSize; off += 8 {
+		chunk := *(*uintptr)(unsafe.Pointer(&buf[off]))
 		addStack(chunk)
 	}
 	return keepAlive

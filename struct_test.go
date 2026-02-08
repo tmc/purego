@@ -530,6 +530,36 @@ func TestRegisterFunc_structArgs(t *testing.T) {
 			t.Fatalf("AddPointers returned %#x wanted %#x", result, expected)
 		}
 	}
+	{
+		type SmallStringArg struct {
+			a string
+			b int32
+		}
+		var SmallStringArgFn func(SmallStringArg) int32
+		purego.RegisterLibFunc(&SmallStringArgFn, lib, "SmallStringArg")
+		// "hello" = 104+101+108+108+111 = 532
+		expected := int32(532 + 100)
+		result := SmallStringArgFn(SmallStringArg{a: "hello", b: 100})
+		if result != expected {
+			t.Fatalf("SmallStringArg returned %d wanted %d", result, expected)
+		}
+	}
+	{
+		type LargeStringArg struct {
+			a string
+			b int32
+			c int64
+			d int64
+		}
+		var LargeStringArgFn func(LargeStringArg) int64
+		purego.RegisterLibFunc(&LargeStringArgFn, lib, "LargeStringArg")
+		// "hi" = 104+105 = 209
+		expected := int64(209 + 10 + 20 + 30)
+		result := LargeStringArgFn(LargeStringArg{a: "hi", b: 10, c: 20, d: 30})
+		if result != expected {
+			t.Fatalf("LargeStringArg returned %d wanted %d", result, expected)
+		}
+	}
 }
 
 func TestRegisterFunc_structReturns(t *testing.T) {
@@ -861,5 +891,43 @@ func TestRegisterFunc_structReturns(t *testing.T) {
 		}
 		runtime.KeepAlive(a)
 		runtime.KeepAlive(b)
+	}
+	{
+		type SmallString struct {
+			a string
+			b int32
+		}
+		var ReturnSmallString func(a string, b int32) SmallString
+		purego.RegisterLibFunc(&ReturnSmallString, lib, "ReturnSmallString")
+		ret := ReturnSmallString("hello\x00", 42)
+		if ret.a != "hello" {
+			t.Fatalf("ReturnSmallString .a = %q wanted %q", ret.a, "hello")
+		}
+		if ret.b != 42 {
+			t.Fatalf("ReturnSmallString .b = %d wanted %d", ret.b, 42)
+		}
+	}
+	{
+		type LargeString struct {
+			a string
+			b int32
+			c int64
+			d int64
+		}
+		var ReturnLargeString func(a string, b int32, c int64, d int64) LargeString
+		purego.RegisterLibFunc(&ReturnLargeString, lib, "ReturnLargeString")
+		ret := ReturnLargeString("world\x00", -99, 123456789, 987654321)
+		if ret.a != "world" {
+			t.Fatalf("ReturnLargeString .a = %q wanted %q", ret.a, "world")
+		}
+		if ret.b != -99 {
+			t.Fatalf("ReturnLargeString .b = %d wanted %d", ret.b, -99)
+		}
+		if ret.c != 123456789 {
+			t.Fatalf("ReturnLargeString .c = %d wanted %d", ret.c, 123456789)
+		}
+		if ret.d != 987654321 {
+			t.Fatalf("ReturnLargeString .d = %d wanted %d", ret.d, 987654321)
+		}
 	}
 }

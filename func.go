@@ -195,7 +195,7 @@ func RegisterFunc(fptr any, cfn uintptr) {
 			ensureStructSupportedForRegisterFunc()
 			outType := ty.Out(0)
 			checkStructFieldsSupported(outType)
-			if runtime.GOARCH == "amd64" && outType.Size() > maxRegAllocStructSize {
+			if runtime.GOARCH == "amd64" && getStructABISize(outType) > maxRegAllocStructSize {
 				// on amd64 if struct is bigger than 16 bytes allocate the return struct
 				// and pass it in as a hidden first argument.
 				ints++
@@ -273,16 +273,30 @@ func RegisterFunc(fptr any, cfn uintptr) {
 		var arm64_r8 uintptr
 		if ty.NumOut() == 1 && ty.Out(0).Kind() == reflect.Struct {
 			outType := ty.Out(0)
-			if (runtime.GOARCH == "amd64" || runtime.GOARCH == "loong64" || runtime.GOARCH == "riscv64") && outType.Size() > maxRegAllocStructSize {
-				val := reflect.New(outType)
-				keepAlive = append(keepAlive, val)
-				addInt(val.Pointer())
-			} else if runtime.GOARCH == "arm64" && outType.Size() > maxRegAllocStructSize {
-				isAllFloats, numFields := isAllSameFloat(outType)
-				if !isAllFloats || numFields > 4 {
+			abiSize := getStructABISize(outType)
+			if (runtime.GOARCH == "amd64" || runtime.GOARCH == "loong64" || runtime.GOARCH == "riscv64") && abiSize > maxRegAllocStructSize {
+				if hasStringFields(outType) {
+					// Allocate a C-sized buffer for the return struct
+					buf := make([]byte, abiSize)
+					keepAlive = append(keepAlive, buf)
+					addInt(uintptr(unsafe.Pointer(&buf[0])))
+				} else {
 					val := reflect.New(outType)
 					keepAlive = append(keepAlive, val)
-					arm64_r8 = val.Pointer()
+					addInt(val.Pointer())
+				}
+			} else if runtime.GOARCH == "arm64" && abiSize > maxRegAllocStructSize {
+				isAllFloats, numFields := isAllSameFloat(outType)
+				if !isAllFloats || numFields > 4 {
+					if hasStringFields(outType) {
+						buf := make([]byte, abiSize)
+						keepAlive = append(keepAlive, buf)
+						arm64_r8 = uintptr(unsafe.Pointer(&buf[0]))
+					} else {
+						val := reflect.New(outType)
+						keepAlive = append(keepAlive, val)
+						arm64_r8 = val.Pointer()
+					}
 				}
 			}
 		}
@@ -470,11 +484,52 @@ func checkStructFieldsSupported(ty reflect.Type) {
 		case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64,
 			reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64,
 			reflect.Uintptr, reflect.Ptr, reflect.UnsafePointer, reflect.Float64, reflect.Float32,
-			reflect.Bool:
+			reflect.Bool, reflect.String:
 		default:
 			panic(fmt.Sprintf("purego: struct field type %s is not supported", f))
 		}
 	}
+}
+
+// hasStringFields returns true if the struct type contains any string fields.
+func hasStringFields(t reflect.Type) bool {
+	for i := 0; i < t.NumField(); i++ {
+		if t.Field(i).Type.Kind() == reflect.String {
+			return true
+		}
+	}
+	return false
+}
+
+// calculateCStructSize computes the size of a struct as it would be laid out
+// in C. Go strings are {ptr, len} (16 bytes) but C strings are *char (8 bytes).
+func calculateCStructSize(t reflect.Type) uintptr {
+	var size uintptr
+	for i := 0; i < t.NumField(); i++ {
+		fieldType := t.Field(i).Type
+		var fieldSize, fieldAlign uintptr
+		if fieldType.Kind() == reflect.String {
+			fieldSize = 8 // C pointer
+			fieldAlign = 8
+		} else {
+			fieldSize = fieldType.Size()
+			fieldAlign = uintptr(fieldType.Align())
+		}
+		size = (size + fieldAlign - 1) & ^(fieldAlign - 1)
+		size += fieldSize
+	}
+	size = (size + 7) & ^uintptr(7) // round up to 8
+	return size
+}
+
+// getStructABISize returns the size to use for ABI decisions (register vs stack).
+// For structs with string fields, the C layout is smaller than the Go layout
+// because Go strings are 16 bytes but C char* is 8 bytes.
+func getStructABISize(t reflect.Type) uintptr {
+	if hasStringFields(t) {
+		return calculateCStructSize(t)
+	}
+	return t.Size()
 }
 
 func ensureStructSupportedForRegisterFunc() {

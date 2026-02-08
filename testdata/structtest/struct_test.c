@@ -391,3 +391,33 @@ struct TwoPointers {
 uintptr_t AddPointers(struct TwoPointers wrapper) {
     return (uintptr_t)wrapper.ptr1 + (uintptr_t)wrapper.ptr2;
 }
+
+struct SmallStringArg {
+    const char *a;
+    int32_t b;
+};
+
+int32_t SmallStringArg(struct SmallStringArg s) {
+    if (s.a == NULL) return -1;
+    int32_t sum = 0;
+    for (const char *p = s.a; *p; p++) {
+        sum += *p;
+    }
+    return sum + s.b;
+}
+
+struct LargeStringArg {
+    const char *a;
+    int32_t b;
+    int64_t c;
+    int64_t d;
+};
+
+int64_t LargeStringArg(struct LargeStringArg s) {
+    if (s.a == NULL) return -1;
+    int64_t sum = 0;
+    for (const char *p = s.a; *p; p++) {
+        sum += *p;
+    }
+    return sum + s.b + s.c + s.d;
+}
