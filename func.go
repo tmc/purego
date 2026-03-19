@@ -218,6 +218,86 @@ func RegisterFunc(fptr any, cfn uintptr) {
 		}
 	}
 
+	// Fast path: when the signature uses only integer-ABI-compatible values
+	// (optionally with trailing float32/float64 args), bypass reflect.MakeFunc
+	// and install a concrete closure directly.
+	//
+	// The asm trampoline stores stack args (beyond register count) as 8-byte
+	// values, so any integer arg that spills to the stack must be pointer-sized.
+	// Small types (uint8, uint16, etc.) in register positions are fine since
+	// registers are always 64-bit.
+	numIn := ty.NumIn()
+	if (runtime.GOARCH == "amd64" || runtime.GOARCH == "arm64") && runtime.GOOS != "windows" && numIn <= 10 {
+		canFastPath := true
+		numFloats := 0
+		numInts := 0
+		trailingFloats := true // whether all floats are trailing (no ints after floats)
+		seenFloat := false
+		floatPos := -1 // position of first float arg (used for interleaved single-float dispatch)
+		intRegCount := numOfIntegerRegisters()
+		for i := 0; i < numIn; i++ {
+			switch ty.In(i).Kind() {
+			case reflect.Uintptr, reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64,
+				reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64,
+				reflect.Bool, reflect.Pointer, reflect.UnsafePointer:
+				if seenFloat {
+					trailingFloats = false
+				}
+				// Stack args must be pointer-sized for the 8-byte slot asm.
+				if numInts >= intRegCount && ty.In(i).Size() < unsafe.Sizeof(uintptr(0)) {
+					canFastPath = false
+				}
+				numInts++
+			case reflect.Float32, reflect.Float64:
+				if !seenFloat {
+					floatPos = i
+				}
+				seenFloat = true
+				numFloats++
+			default:
+				canFastPath = false
+			}
+		}
+		if numFloats > 8 {
+			canFastPath = false
+		}
+		if numInts > 10 {
+			canFastPath = false
+		}
+		if ty.NumOut() == 1 {
+			switch ty.Out(0).Kind() {
+			case reflect.Uintptr, reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64,
+				reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64,
+				reflect.Bool, reflect.Pointer, reflect.UnsafePointer:
+			default:
+				canFastPath = false
+			}
+		}
+		if canFastPath {
+			if numFloats > 0 {
+				hasReturn := ty.NumOut() > 0
+				if numFloats == 1 {
+					if trailingFloats {
+						// Concrete closure: N ints + 1 trailing float.
+						registerFastFuncFloat(fn, cfn, ty, numInts, numFloats, hasReturn)
+					} else if ty.In(floatPos).Kind() == reflect.Float32 {
+						// Concrete closure: 1 float32 interleaved at any position.
+						registerFastFuncInterleavedFloat32x1(fn, cfn, numIn, floatPos, hasReturn)
+					} else {
+						// float64 interleaved — MakeFunc fallback.
+						registerFastFuncFloatN(fn, cfn, ty, numInts, numFloats, hasReturn)
+					}
+				} else {
+					// Multiple floats — MakeFunc fallback.
+					registerFastFuncFloatN(fn, cfn, ty, numInts, numFloats, hasReturn)
+				}
+			} else {
+				registerFastFunc(fn, cfn, numInts, ty.NumOut() > 0)
+			}
+			return
+		}
+	}
+
 	v := reflect.MakeFunc(ty, func(args []reflect.Value) (results []reflect.Value) {
 		var sysargs [maxArgs]uintptr
 		// Use maxArgs instead of numOfFloatRegisters() to keep this code path allocation-free,
