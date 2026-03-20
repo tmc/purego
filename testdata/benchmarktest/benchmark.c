@@ -70,6 +70,29 @@ int64_t interleaved_3_f0_c(float w, int64_t a, int64_t b) {
   return (int64_t)((double)(a + b) * (double)w);
 }
 
+// GatherQMM-shape: 13 args with struct-packed int32+bool pairs
+// In the real mlx C ABI, OptionalInt is {int32_t, _Bool} packed into 8 bytes.
+// We accept it as two int64_t per OptionalInt to match how Go sees them after flattening.
+int32_t gather_qmm_shape_c(int64_t res, int64_t x, int64_t w, int64_t scales,
+                            int64_t biases, int64_t lhs_idx, int64_t rhs_idx,
+                            int64_t transpose, int64_t group_size,
+                            int64_t bits, int64_t mode, int64_t sorted,
+                            int64_t stream) {
+  return (int32_t)(res + x + w + scales + biases + lhs_idx + rhs_idx +
+                   transpose + group_size + bits + mode + sorted + stream);
+}
+
+// RoPE-shape: 9 args with optionalFloat{float32, int8} struct + interleaved float
+// optionalFloat is {float, signed char} = 8 bytes, passed in a GP register.
+typedef struct { float value; signed char has_value; } opt_float_t;
+
+int32_t rope_shape_c(int64_t res, int64_t x, int32_t dims, int64_t traditional,
+                     opt_float_t base, float scale, int32_t offset,
+                     int64_t freqs, int64_t stream) {
+  return (int32_t)(res + x + dims + traditional + (int64_t)base.value +
+                   (int64_t)scale + offset + freqs + stream);
+}
+
 typedef int64_t (*callback1_t)(int64_t);
 int64_t call_callback1(callback1_t cb, int64_t a1) { return cb(a1); }
 

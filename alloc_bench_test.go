@@ -144,3 +144,48 @@ func BenchmarkAlloc_RMSNorm_5args(b *testing.B) {
 		_ = fn(1, 2, 3, 1e-5, 4)
 	}
 }
+
+// --- Struct-containing signatures (should hit registerFastFuncWithStructs) ---
+
+// OptionalInt mirrors mlxc.OptionalInt: {int32, bool} packed in 8 bytes.
+type OptionalInt struct {
+	Value    int32
+	HasValue bool
+}
+
+// OptionalFloat mirrors mlxc.optionalFloat: {float32, int8} packed in 8 bytes.
+// This is NOT an HFA (mixed types), so it's passed in a GP register.
+type OptionalFloat struct {
+	Value    float32
+	HasValue int8
+}
+
+// BenchmarkAlloc_RoPE_9args matches RoPE shape:
+// uintptr, uintptr, int32, bool, OptionalFloat, float32, int32, uintptr, uintptr → int32
+func BenchmarkAlloc_RoPE_9args(b *testing.B) {
+	h := loadBenchLib(b)
+	var fn func(uintptr, uintptr, int32, bool, OptionalFloat, float32, int32, uintptr, uintptr) int32
+	purego.RegisterLibFunc(&fn, h, "rope_shape_c")
+	b.ReportAllocs()
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		_ = fn(1, 2, 128, false, OptionalFloat{10000.0, 1}, 1.0, 0, 3, 4)
+	}
+}
+
+// BenchmarkAlloc_GatherQMM_13args matches GatherQMM shape:
+// *Array, 6×uintptr, bool, OptionalInt, OptionalInt, *byte, bool, uintptr → int32
+func BenchmarkAlloc_GatherQMM_13args(b *testing.B) {
+	h := loadBenchLib(b)
+	var fn func(*int32, uintptr, uintptr, uintptr, uintptr, uintptr, uintptr, bool, OptionalInt, OptionalInt, *byte, bool, uintptr) int32
+	purego.RegisterLibFunc(&fn, h, "gather_qmm_shape_c")
+	var res int32
+	mode := []byte("default\x00")
+	b.ReportAllocs()
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		_ = fn(&res, 1, 2, 3, 0, 0, 0, false,
+			OptionalInt{64, true}, OptionalInt{4, true},
+			&mode[0], false, 8)
+	}
+}

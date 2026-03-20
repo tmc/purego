@@ -27,7 +27,7 @@ import (
 	"strings"
 )
 
-const maxIntArgs = 10
+const maxIntArgs = 15
 
 func main() {
 	var buf bytes.Buffer
