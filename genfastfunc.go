@@ -7,7 +7,7 @@
 // The output file is zz_fast_func.go.
 //
 // All generated code is driven by a single declarative config (defaultConfig).
-// To add a new fast-path pattern, add a fastPattern
+// To add a new fast-path pattern (e.g. trailing float64x3), add a fastPattern
 // entry and re-run go generate.
 package main
 
@@ -34,16 +34,18 @@ type fastPattern struct {
 	NumFloats int    // exact float count (0 = int-only)
 	FloatBits int    // 32 or 64 (0 = N/A for int-only)
 	Layout    string // "trailing", "interleaved", "any" (empty = N/A for int-only)
+	Exported  bool   // emit exported FastCallN wrappers
 }
 
 var defaultConfig = fastPathConfig{
 	MaxIntArgs:   15,
 	MaxFloatArgs: 8,
 	Patterns: []fastPattern{
-		{Name: "IntOnly", MaxInts: -1, NumFloats: 0},
-		{Name: "TrailingFloat32x1", MaxInts: -1, NumFloats: 1, FloatBits: 32, Layout: "trailing"},
-		{Name: "TrailingFloat64x1", MaxInts: -1, NumFloats: 1, FloatBits: 64, Layout: "trailing"},
+		{Name: "IntOnly", MaxInts: -1, NumFloats: 0, Exported: true},
+		{Name: "TrailingFloat32x1", MaxInts: -1, NumFloats: 1, FloatBits: 32, Layout: "trailing", Exported: true},
+		{Name: "TrailingFloat64x1", MaxInts: -1, NumFloats: 1, FloatBits: 64, Layout: "trailing", Exported: true},
 		{Name: "InterleavedFloat32x1", MinInts: 1, MaxInts: -1, NumFloats: 1, FloatBits: 32, Layout: "interleaved"},
+		{Name: "TrailingFloat64x3", MaxInts: -1, NumFloats: 3, FloatBits: 64, Layout: "trailing", Exported: true},
 	},
 }
 
@@ -70,10 +72,11 @@ import (
 
 `)
 
-	emitFastCallN(&buf, cfg)       // fastCall0..fastCallN pool-based backends
-	emitFastCallIF(&buf, cfg)      // shared int+float backend
-	emitPatternClosures(&buf, cfg) // per-pattern register* functions
-	emitFloatNFallback(&buf, cfg)  // registerFastFuncFloatN MakeFunc fallback
+	emitFastCallN(&buf, cfg)        // fastCall0..fastCallN pool-based backends
+	emitFastCallIF(&buf, cfg)       // shared int+float backend
+	emitPatternClosures(&buf, cfg)  // per-pattern register* functions
+	emitExportedWrappers(&buf, cfg) // FastCallN, FastCallNF1, etc.
+	emitFloatNFallback(&buf, cfg)   // registerFastFuncFloatN MakeFunc fallback
 	emitTryRegisterFastPath(&buf, cfg)
 	emitForceFuncPtr(&buf)
 
@@ -95,6 +98,8 @@ func resolveConfig(cfg *fastPathConfig) {
 	}
 }
 
+// --- helpers ---
+
 func argList(n int) string {
 	if n == 0 {
 		return ""
@@ -113,6 +118,14 @@ func paramList(n int) string {
 	return argList(n) + " uintptr"
 }
 
+func floatArgList(n int) string {
+	parts := make([]string, n)
+	for i := range n {
+		parts[i] = fmt.Sprintf("f%d", i+1)
+	}
+	return strings.Join(parts, ", ")
+}
+
 func floatParamList(n int, bits int) string {
 	ty := "float32"
 	if bits == 64 {
@@ -124,6 +137,22 @@ func floatParamList(n int, bits int) string {
 	}
 	return strings.Join(parts, ", ") + " " + ty
 }
+
+func floatBitsFunc(bits int) string {
+	if bits == 64 {
+		return "math.Float64bits"
+	}
+	return "math.Float32bits"
+}
+
+func floatBitsCast(bits int, varName string) string {
+	if bits == 64 {
+		return fmt.Sprintf("uintptr(math.Float64bits(%s))", varName)
+	}
+	return fmt.Sprintf("uintptr(math.Float32bits(%s))", varName)
+}
+
+// --- emitters ---
 
 // emitFastCallN emits fastCall0..fastCall{MaxIntArgs}: pool-based int-only backends.
 func emitFastCallN(buf *bytes.Buffer, cfg fastPathConfig) {
@@ -336,20 +365,18 @@ func emitTrailingFloat1Closures(buf *bytes.Buffer, cfg fastPathConfig, p fastPat
 		buf.WriteString("\t\t\t\tvar floats [8]uintptr\n")
 		fmt.Fprintf(buf, "\t\t\t\tfloats[0] = uintptr(%s(f1))\n", bitsFunc)
 		fmt.Fprintf(buf, "\t\t\t\treturn fastCallIF(cfn, ints, %d, floats, 1)\n", n)
-		buf.WriteString(`			}
-			forceFuncPtr(fn, &impl)
-		} else {
-`)
+		buf.WriteString("\t\t\t}\n")
+		buf.WriteString("\t\t\tforceFuncPtr(fn, &impl)\n")
+		buf.WriteString("\t\t} else {\n")
 
 		fmt.Fprintf(buf, "\t\t\timpl := func(%sf1 %s) {\n", intParams, typeName)
 		fmt.Fprintf(buf, "\t\t\t\t%s\n", intsInit)
 		buf.WriteString("\t\t\t\tvar floats [8]uintptr\n")
 		fmt.Fprintf(buf, "\t\t\t\tfloats[0] = uintptr(%s(f1))\n", bitsFunc)
 		fmt.Fprintf(buf, "\t\t\t\tfastCallIF(cfn, ints, %d, floats, 1)\n", n)
-		buf.WriteString(`			}
-			forceFuncPtr(fn, &impl)
-		}
-`)
+		buf.WriteString("\t\t\t}\n")
+		buf.WriteString("\t\t\tforceFuncPtr(fn, &impl)\n")
+		buf.WriteString("\t\t}\n")
 	}
 	buf.WriteString("\t}\n}\n\n")
 }
@@ -359,9 +386,11 @@ func emitTrailingFloatNClosures(buf *bytes.Buffer, cfg fastPathConfig, p fastPat
 	maxTrailingInts := max(p.MaxInts-p.NumFloats, 0)
 	typeName := "float32"
 	bitsFunc := "math.Float32bits"
+	bitsSuffix := "F"
 	if p.FloatBits == 64 {
 		typeName = "float64"
 		bitsFunc = "math.Float64bits"
+		bitsSuffix = "D"
 	}
 
 	funcName := fmt.Sprintf("registerFastFunc%s", p.Name)
@@ -385,6 +414,7 @@ func emitTrailingFloatNClosures(buf *bytes.Buffer, cfg fastPathConfig, p fastPat
 		}
 
 		floatParams := floatParamList(p.NumFloats, p.FloatBits)
+		_ = bitsSuffix // used in exported wrappers
 
 		fmt.Fprintf(buf, "\t\tif hasReturn {\n")
 		fmt.Fprintf(buf, "\t\t\timpl := func(%s%s) uintptr {\n", intParams, floatParams)
@@ -394,10 +424,9 @@ func emitTrailingFloatNClosures(buf *bytes.Buffer, cfg fastPathConfig, p fastPat
 			fmt.Fprintf(buf, "\t\t\t\tfloats[%d] = uintptr(%s(f%d))\n", fi, bitsFunc, fi+1)
 		}
 		fmt.Fprintf(buf, "\t\t\t\treturn fastCallIF(cfn, ints, %d, floats, %d)\n", n, p.NumFloats)
-		buf.WriteString(`			}
-			forceFuncPtr(fn, &impl)
-		} else {
-`)
+		buf.WriteString("\t\t\t}\n")
+		buf.WriteString("\t\t\tforceFuncPtr(fn, &impl)\n")
+		buf.WriteString("\t\t} else {\n")
 
 		fmt.Fprintf(buf, "\t\t\timpl := func(%s%s) {\n", intParams, floatParams)
 		fmt.Fprintf(buf, "\t\t\t\t%s\n", intsInit)
@@ -406,10 +435,9 @@ func emitTrailingFloatNClosures(buf *bytes.Buffer, cfg fastPathConfig, p fastPat
 			fmt.Fprintf(buf, "\t\t\t\tfloats[%d] = uintptr(%s(f%d))\n", fi, bitsFunc, fi+1)
 		}
 		fmt.Fprintf(buf, "\t\t\t\tfastCallIF(cfn, ints, %d, floats, %d)\n", n, p.NumFloats)
-		buf.WriteString(`			}
-			forceFuncPtr(fn, &impl)
-		}
-`)
+		buf.WriteString("\t\t\t}\n")
+		buf.WriteString("\t\t\tforceFuncPtr(fn, &impl)\n")
+		buf.WriteString("\t\t}\n")
 	}
 	buf.WriteString("\t}\n}\n\n")
 }
@@ -437,20 +465,18 @@ func registerFastFuncInterleavedFloat32x1(fn reflect.Value, cfn uintptr, totalAr
 			buf.WriteString("\t\t\t\t\tvar floats [8]uintptr\n")
 			buf.WriteString("\t\t\t\t\tfloats[0] = uintptr(math.Float32bits(f1))\n")
 			fmt.Fprintf(buf, "\t\t\t\t\treturn fastCallIF(cfn, ints, %d, floats, 1)\n", numInts)
-			buf.WriteString(`				}
-				forceFuncPtr(fn, &impl)
-			} else {
-`)
+			buf.WriteString("\t\t\t\t}\n")
+			buf.WriteString("\t\t\t\tforceFuncPtr(fn, &impl)\n")
+			buf.WriteString("\t\t\t} else {\n")
 
 			fmt.Fprintf(buf, "\t\t\t\timpl := func(%s) {\n", interleavedParams(totalArgs, floatPos))
 			fmt.Fprintf(buf, "\t\t\t\t\tints := [%d]uintptr{%s}\n", cfg.MaxIntArgs, interleavedIntArgs(totalArgs))
 			buf.WriteString("\t\t\t\t\tvar floats [8]uintptr\n")
 			buf.WriteString("\t\t\t\t\tfloats[0] = uintptr(math.Float32bits(f1))\n")
 			fmt.Fprintf(buf, "\t\t\t\t\tfastCallIF(cfn, ints, %d, floats, 1)\n", numInts)
-			buf.WriteString(`				}
-				forceFuncPtr(fn, &impl)
-			}
-`)
+			buf.WriteString("\t\t\t\t}\n")
+			buf.WriteString("\t\t\t\tforceFuncPtr(fn, &impl)\n")
+			buf.WriteString("\t\t\t}\n")
 		}
 
 		fmt.Fprintf(buf, "\t\t}\n")
@@ -479,6 +505,156 @@ func interleavedIntArgs(totalArgs int) string {
 		parts[i] = fmt.Sprintf("a%d", i+1)
 	}
 	return strings.Join(parts, ", ")
+}
+
+// emitExportedWrappers emits exported FastCallN, FastCallNF1, FastCallND3, etc.
+func emitExportedWrappers(buf *bytes.Buffer, cfg fastPathConfig) {
+	for _, p := range cfg.Patterns {
+		if !p.Exported {
+			continue
+		}
+		switch {
+		case p.NumFloats == 0:
+			emitExportedIntOnly(buf, cfg, p)
+		case p.Layout == "trailing" && p.NumFloats == 1:
+			emitExportedTrailingFloat1(buf, cfg, p)
+		case p.Layout == "trailing" && p.NumFloats > 1:
+			emitExportedTrailingFloatN(buf, cfg, p)
+		}
+	}
+}
+
+func emitExportedIntOnly(buf *bytes.Buffer, _ fastPathConfig, p fastPattern) {
+	buf.WriteString("// Exported fast-call API: integer-only\n\n")
+	for n := p.MinInts; n <= p.MaxInts; n++ {
+		params := "cfn"
+		if n > 0 {
+			params += ", " + argList(n)
+		}
+		fmt.Fprintf(buf, "// FastCall%d calls a C function with %d arguments without heap allocations.\n", n, n)
+		fmt.Fprintf(buf, "func FastCall%d(%s uintptr) uintptr { return fastCall%d(%s) }\n\n", n, params, n, params)
+	}
+}
+
+func emitExportedTrailingFloat1(buf *bytes.Buffer, _ fastPathConfig, p fastPattern) {
+	maxInts := max(p.MaxInts-1, 0)
+	suffix := "F1"
+	floatComment := "1 float"
+	if p.FloatBits == 64 {
+		suffix = "D1"
+		floatComment = "1 double"
+	}
+
+	fmt.Fprintf(buf, "// Exported fast-call API: N ints + %s\n\n", floatComment)
+	for n := p.MinInts; n <= maxInts; n++ {
+		params := "cfn"
+		if n > 0 {
+			params += ", " + argList(n)
+		}
+		params += ", f1 uintptr"
+
+		callParams := "cfn"
+		if n > 0 {
+			callParams += ", " + argList(n)
+		}
+		callParams += ", f1"
+
+		fmt.Fprintf(buf, "// FastCall%d%s calls a C function with %d integer args and %s.\n", n, suffix, n, floatComment)
+		fmt.Fprintf(buf, "// The float arg must be pre-converted via math.Float32bits or math.Float64bits.\n")
+		fmt.Fprintf(buf, "func FastCall%d%s(%s) uintptr {\n", n, suffix, params)
+		emitExportedFastCallIFBody(buf, n, 1)
+		buf.WriteString("}\n\n")
+	}
+}
+
+func emitExportedTrailingFloatN(buf *bytes.Buffer, _ fastPathConfig, p fastPattern) {
+	maxInts := max(p.MaxInts-p.NumFloats, 0)
+	suffix := fmt.Sprintf("F%d", p.NumFloats)
+	floatComment := fmt.Sprintf("%d floats", p.NumFloats)
+	if p.FloatBits == 64 {
+		suffix = fmt.Sprintf("D%d", p.NumFloats)
+		floatComment = fmt.Sprintf("%d doubles", p.NumFloats)
+	}
+
+	fmt.Fprintf(buf, "// Exported fast-call API: N ints + %s\n\n", floatComment)
+	for n := p.MinInts; n <= maxInts; n++ {
+		params := "cfn"
+		if n > 0 {
+			params += ", " + argList(n)
+		}
+		params += ", " + floatArgList(p.NumFloats) + " uintptr"
+
+		fmt.Fprintf(buf, "// FastCall%d%s calls a C function with %d integer args and %s.\n", n, suffix, n, floatComment)
+		fmt.Fprintf(buf, "// Float args must be pre-converted via math.Float32bits or math.Float64bits.\n")
+		fmt.Fprintf(buf, "func FastCall%d%s(%s) uintptr {\n", n, suffix, params)
+		emitExportedFastCallIFBody(buf, n, p.NumFloats)
+		buf.WriteString("}\n\n")
+	}
+}
+
+// emitExportedFastCallIFBody emits a pool-based direct call body for exported wrappers.
+func emitExportedFastCallIFBody(buf *bytes.Buffer, numInts, numFloats int) {
+	buf.WriteString("\ts := thePool.Get().(*syscall15Args)\n")
+	buf.WriteString("\ts.fn = cfn\n")
+
+	// Set a1..a8
+	if numInts == 0 {
+		buf.WriteString("\ts.a1, s.a2, s.a3, s.a4, s.a5, s.a6, s.a7, s.a8 = 0, 0, 0, 0, 0, 0, 0, 0\n")
+	} else if numInts <= 8 {
+		parts := make([]string, 8)
+		for i := range 8 {
+			if i < numInts {
+				parts[i] = fmt.Sprintf("a%d", i+1)
+			} else {
+				parts[i] = "0"
+			}
+		}
+		fmt.Fprintf(buf, "\ts.a1, s.a2, s.a3, s.a4, s.a5, s.a6, s.a7, s.a8 = %s\n", strings.Join(parts, ", "))
+	} else {
+		buf.WriteString("\ts.a1, s.a2, s.a3, s.a4, s.a5, s.a6, s.a7, s.a8 = a1, a2, a3, a4, a5, a6, a7, a8\n")
+	}
+
+	// Set a9..a15
+	fields := []string{"s.a9", "s.a10", "s.a11", "s.a12", "s.a13", "s.a14", "s.a15"}
+	if numInts > 8 {
+		overflow := make([]string, numInts-8)
+		for i := 8; i < numInts; i++ {
+			overflow[i-8] = fmt.Sprintf("a%d", i+1)
+		}
+		usedFields := fields[:len(overflow)]
+		fmt.Fprintf(buf, "\t%s = %s\n", strings.Join(usedFields, ", "), strings.Join(overflow, ", "))
+		remaining := fields[len(overflow):]
+		if len(remaining) > 0 {
+			zeros := make([]string, len(remaining))
+			for i := range zeros {
+				zeros[i] = "0"
+			}
+			fmt.Fprintf(buf, "\t%s = %s\n", strings.Join(remaining, ", "), strings.Join(zeros, ", "))
+		}
+	} else {
+		zeros := make([]string, 7)
+		for i := range zeros {
+			zeros[i] = "0"
+		}
+		fmt.Fprintf(buf, "\t%s = %s\n", strings.Join(fields, ", "), strings.Join(zeros, ", "))
+	}
+
+	// Set f1..f8
+	fParts := make([]string, 8)
+	for i := range 8 {
+		if i < numFloats {
+			fParts[i] = fmt.Sprintf("f%d", i+1)
+		} else {
+			fParts[i] = "0"
+		}
+	}
+	fmt.Fprintf(buf, "\ts.f1, s.f2, s.f3, s.f4, s.f5, s.f6, s.f7, s.f8 = %s\n", strings.Join(fParts, ", "))
+
+	buf.WriteString("\ts.arm64_r8 = 0\n")
+	buf.WriteString("\truntime_cgocall(syscall15XABI0, unsafe.Pointer(s))\n")
+	buf.WriteString("\tr := s.a1\n")
+	buf.WriteString("\tthePool.Put(s)\n")
+	buf.WriteString("\treturn r\n")
 }
 
 // emitFloatNFallback emits the MakeFunc fallback for unmatched float sigs.
@@ -637,39 +813,31 @@ func tryRegisterFastPath(fn reflect.Value, cfn uintptr, ty reflect.Type) bool {
 		switch {
 		case p.NumFloats == 0:
 			// Int-only: numFloats == 0
-			buf.WriteString(`	if numFloats == 0 {
-		registerFastFunc(fn, cfn, numInts, hasReturn)
-		return true
-	}
-
-`)
+			buf.WriteString("\tif numFloats == 0 {\n")
+			buf.WriteString("\t\tregisterFastFunc(fn, cfn, numInts, hasReturn)\n")
+			buf.WriteString("\t\treturn true\n")
+			buf.WriteString("\t}\n\n")
 
 		case p.Layout == "trailing" && p.NumFloats == 1 && p.FloatBits == 32:
-			buf.WriteString(`	// Trailing float32x1
-	if numFloats == 1 && trailingFloats && ty.In(numInts).Kind() == reflect.Float32 {
-		registerFastFuncFloat32x1(fn, cfn, numInts, hasReturn)
-		return true
-	}
-
-`)
+			buf.WriteString("\t// Trailing float32x1\n")
+			buf.WriteString("\tif numFloats == 1 && trailingFloats && ty.In(numInts).Kind() == reflect.Float32 {\n")
+			buf.WriteString("\t\tregisterFastFuncFloat32x1(fn, cfn, numInts, hasReturn)\n")
+			buf.WriteString("\t\treturn true\n")
+			buf.WriteString("\t}\n\n")
 
 		case p.Layout == "trailing" && p.NumFloats == 1 && p.FloatBits == 64:
-			buf.WriteString(`	// Trailing float64x1
-	if numFloats == 1 && trailingFloats && ty.In(numInts).Kind() == reflect.Float64 {
-		registerFastFuncFloat64x1(fn, cfn, numInts, hasReturn)
-		return true
-	}
-
-`)
+			buf.WriteString("\t// Trailing float64x1\n")
+			buf.WriteString("\tif numFloats == 1 && trailingFloats && ty.In(numInts).Kind() == reflect.Float64 {\n")
+			buf.WriteString("\t\tregisterFastFuncFloat64x1(fn, cfn, numInts, hasReturn)\n")
+			buf.WriteString("\t\treturn true\n")
+			buf.WriteString("\t}\n\n")
 
 		case p.Layout == "interleaved" && p.NumFloats == 1 && p.FloatBits == 32:
-			buf.WriteString(`	// Interleaved float32x1
-	if numFloats == 1 && !trailingFloats && ty.In(floatPos).Kind() == reflect.Float32 {
-		registerFastFuncInterleavedFloat32x1(fn, cfn, numIn, floatPos, hasReturn)
-		return true
-	}
-
-`)
+			buf.WriteString("\t// Interleaved float32x1\n")
+			buf.WriteString("\tif numFloats == 1 && !trailingFloats && ty.In(floatPos).Kind() == reflect.Float32 {\n")
+			buf.WriteString("\t\tregisterFastFuncInterleavedFloat32x1(fn, cfn, numIn, floatPos, hasReturn)\n")
+			buf.WriteString("\t\treturn true\n")
+			buf.WriteString("\t}\n\n")
 
 		case p.Layout == "trailing" && p.NumFloats > 1:
 			fmt.Fprintf(buf, "\t// %s: %d trailing %d-bit floats\n", p.Name, p.NumFloats, p.FloatBits)
@@ -682,28 +850,23 @@ func tryRegisterFastPath(fn reflect.Value, cfn uintptr, ty reflect.Type) bool {
 			buf.WriteString("\t\tallMatch := true\n")
 			fmt.Fprintf(buf, "\t\tfor i := numInts; i < numIn; i++ {\n")
 			fmt.Fprintf(buf, "\t\t\tif ty.In(i).Kind() != %s {\n", floatKind)
-			buf.WriteString(`				allMatch = false
-				break
-			}
-		}
-		if allMatch {
-`)
+			buf.WriteString("\t\t\t\tallMatch = false\n")
+			buf.WriteString("\t\t\t\tbreak\n")
+			buf.WriteString("\t\t\t}\n")
+			buf.WriteString("\t\t}\n")
+			buf.WriteString("\t\tif allMatch {\n")
 			fmt.Fprintf(buf, "\t\t\tregisterFastFunc%s(fn, cfn, numInts, hasReturn)\n", p.Name)
-			buf.WriteString(`			return true
-		}
-	}
-
-`)
+			buf.WriteString("\t\t\treturn true\n")
+			buf.WriteString("\t\t}\n")
+			buf.WriteString("\t}\n\n")
 		}
 	}
 
 	// Final fallback: MakeFunc for any remaining float sigs
-	buf.WriteString(`	// Fallback: MakeFunc for unmatched float patterns
-	registerFastFuncFloatN(fn, cfn, ty, numInts, numFloats, hasReturn)
-	return true
-}
-
-`)
+	buf.WriteString("\t// Fallback: MakeFunc for unmatched float patterns\n")
+	buf.WriteString("\tregisterFastFuncFloatN(fn, cfn, ty, numInts, numFloats, hasReturn)\n")
+	buf.WriteString("\treturn true\n")
+	buf.WriteString("}\n\n")
 }
 
 // emitForceFuncPtr emits the unsafe func-ptr swap utility.

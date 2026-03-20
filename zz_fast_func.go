@@ -3218,6 +3218,1035 @@ func registerFastFuncInterleavedFloat32x1(fn reflect.Value, cfn uintptr, totalAr
 	}
 }
 
+// registerFastFuncTrailingFloat64x3 handles N int args + 3 trailing float64.
+func registerFastFuncTrailingFloat64x3(fn reflect.Value, cfn uintptr, numInts int, hasReturn bool) {
+	switch numInts {
+	case 0:
+		if hasReturn {
+			impl := func(f1, f2, f3 float64) uintptr {
+				var ints [15]uintptr
+				var floats [8]uintptr
+				floats[0] = uintptr(math.Float64bits(f1))
+				floats[1] = uintptr(math.Float64bits(f2))
+				floats[2] = uintptr(math.Float64bits(f3))
+				return fastCallIF(cfn, ints, 0, floats, 3)
+			}
+			forceFuncPtr(fn, &impl)
+		} else {
+			impl := func(f1, f2, f3 float64) {
+				var ints [15]uintptr
+				var floats [8]uintptr
+				floats[0] = uintptr(math.Float64bits(f1))
+				floats[1] = uintptr(math.Float64bits(f2))
+				floats[2] = uintptr(math.Float64bits(f3))
+				fastCallIF(cfn, ints, 0, floats, 3)
+			}
+			forceFuncPtr(fn, &impl)
+		}
+	case 1:
+		if hasReturn {
+			impl := func(a1 uintptr, f1, f2, f3 float64) uintptr {
+				ints := [15]uintptr{a1}
+				var floats [8]uintptr
+				floats[0] = uintptr(math.Float64bits(f1))
+				floats[1] = uintptr(math.Float64bits(f2))
+				floats[2] = uintptr(math.Float64bits(f3))
+				return fastCallIF(cfn, ints, 1, floats, 3)
+			}
+			forceFuncPtr(fn, &impl)
+		} else {
+			impl := func(a1 uintptr, f1, f2, f3 float64) {
+				ints := [15]uintptr{a1}
+				var floats [8]uintptr
+				floats[0] = uintptr(math.Float64bits(f1))
+				floats[1] = uintptr(math.Float64bits(f2))
+				floats[2] = uintptr(math.Float64bits(f3))
+				fastCallIF(cfn, ints, 1, floats, 3)
+			}
+			forceFuncPtr(fn, &impl)
+		}
+	case 2:
+		if hasReturn {
+			impl := func(a1, a2 uintptr, f1, f2, f3 float64) uintptr {
+				ints := [15]uintptr{a1, a2}
+				var floats [8]uintptr
+				floats[0] = uintptr(math.Float64bits(f1))
+				floats[1] = uintptr(math.Float64bits(f2))
+				floats[2] = uintptr(math.Float64bits(f3))
+				return fastCallIF(cfn, ints, 2, floats, 3)
+			}
+			forceFuncPtr(fn, &impl)
+		} else {
+			impl := func(a1, a2 uintptr, f1, f2, f3 float64) {
+				ints := [15]uintptr{a1, a2}
+				var floats [8]uintptr
+				floats[0] = uintptr(math.Float64bits(f1))
+				floats[1] = uintptr(math.Float64bits(f2))
+				floats[2] = uintptr(math.Float64bits(f3))
+				fastCallIF(cfn, ints, 2, floats, 3)
+			}
+			forceFuncPtr(fn, &impl)
+		}
+	case 3:
+		if hasReturn {
+			impl := func(a1, a2, a3 uintptr, f1, f2, f3 float64) uintptr {
+				ints := [15]uintptr{a1, a2, a3}
+				var floats [8]uintptr
+				floats[0] = uintptr(math.Float64bits(f1))
+				floats[1] = uintptr(math.Float64bits(f2))
+				floats[2] = uintptr(math.Float64bits(f3))
+				return fastCallIF(cfn, ints, 3, floats, 3)
+			}
+			forceFuncPtr(fn, &impl)
+		} else {
+			impl := func(a1, a2, a3 uintptr, f1, f2, f3 float64) {
+				ints := [15]uintptr{a1, a2, a3}
+				var floats [8]uintptr
+				floats[0] = uintptr(math.Float64bits(f1))
+				floats[1] = uintptr(math.Float64bits(f2))
+				floats[2] = uintptr(math.Float64bits(f3))
+				fastCallIF(cfn, ints, 3, floats, 3)
+			}
+			forceFuncPtr(fn, &impl)
+		}
+	case 4:
+		if hasReturn {
+			impl := func(a1, a2, a3, a4 uintptr, f1, f2, f3 float64) uintptr {
+				ints := [15]uintptr{a1, a2, a3, a4}
+				var floats [8]uintptr
+				floats[0] = uintptr(math.Float64bits(f1))
+				floats[1] = uintptr(math.Float64bits(f2))
+				floats[2] = uintptr(math.Float64bits(f3))
+				return fastCallIF(cfn, ints, 4, floats, 3)
+			}
+			forceFuncPtr(fn, &impl)
+		} else {
+			impl := func(a1, a2, a3, a4 uintptr, f1, f2, f3 float64) {
+				ints := [15]uintptr{a1, a2, a3, a4}
+				var floats [8]uintptr
+				floats[0] = uintptr(math.Float64bits(f1))
+				floats[1] = uintptr(math.Float64bits(f2))
+				floats[2] = uintptr(math.Float64bits(f3))
+				fastCallIF(cfn, ints, 4, floats, 3)
+			}
+			forceFuncPtr(fn, &impl)
+		}
+	case 5:
+		if hasReturn {
+			impl := func(a1, a2, a3, a4, a5 uintptr, f1, f2, f3 float64) uintptr {
+				ints := [15]uintptr{a1, a2, a3, a4, a5}
+				var floats [8]uintptr
+				floats[0] = uintptr(math.Float64bits(f1))
+				floats[1] = uintptr(math.Float64bits(f2))
+				floats[2] = uintptr(math.Float64bits(f3))
+				return fastCallIF(cfn, ints, 5, floats, 3)
+			}
+			forceFuncPtr(fn, &impl)
+		} else {
+			impl := func(a1, a2, a3, a4, a5 uintptr, f1, f2, f3 float64) {
+				ints := [15]uintptr{a1, a2, a3, a4, a5}
+				var floats [8]uintptr
+				floats[0] = uintptr(math.Float64bits(f1))
+				floats[1] = uintptr(math.Float64bits(f2))
+				floats[2] = uintptr(math.Float64bits(f3))
+				fastCallIF(cfn, ints, 5, floats, 3)
+			}
+			forceFuncPtr(fn, &impl)
+		}
+	case 6:
+		if hasReturn {
+			impl := func(a1, a2, a3, a4, a5, a6 uintptr, f1, f2, f3 float64) uintptr {
+				ints := [15]uintptr{a1, a2, a3, a4, a5, a6}
+				var floats [8]uintptr
+				floats[0] = uintptr(math.Float64bits(f1))
+				floats[1] = uintptr(math.Float64bits(f2))
+				floats[2] = uintptr(math.Float64bits(f3))
+				return fastCallIF(cfn, ints, 6, floats, 3)
+			}
+			forceFuncPtr(fn, &impl)
+		} else {
+			impl := func(a1, a2, a3, a4, a5, a6 uintptr, f1, f2, f3 float64) {
+				ints := [15]uintptr{a1, a2, a3, a4, a5, a6}
+				var floats [8]uintptr
+				floats[0] = uintptr(math.Float64bits(f1))
+				floats[1] = uintptr(math.Float64bits(f2))
+				floats[2] = uintptr(math.Float64bits(f3))
+				fastCallIF(cfn, ints, 6, floats, 3)
+			}
+			forceFuncPtr(fn, &impl)
+		}
+	case 7:
+		if hasReturn {
+			impl := func(a1, a2, a3, a4, a5, a6, a7 uintptr, f1, f2, f3 float64) uintptr {
+				ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7}
+				var floats [8]uintptr
+				floats[0] = uintptr(math.Float64bits(f1))
+				floats[1] = uintptr(math.Float64bits(f2))
+				floats[2] = uintptr(math.Float64bits(f3))
+				return fastCallIF(cfn, ints, 7, floats, 3)
+			}
+			forceFuncPtr(fn, &impl)
+		} else {
+			impl := func(a1, a2, a3, a4, a5, a6, a7 uintptr, f1, f2, f3 float64) {
+				ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7}
+				var floats [8]uintptr
+				floats[0] = uintptr(math.Float64bits(f1))
+				floats[1] = uintptr(math.Float64bits(f2))
+				floats[2] = uintptr(math.Float64bits(f3))
+				fastCallIF(cfn, ints, 7, floats, 3)
+			}
+			forceFuncPtr(fn, &impl)
+		}
+	case 8:
+		if hasReturn {
+			impl := func(a1, a2, a3, a4, a5, a6, a7, a8 uintptr, f1, f2, f3 float64) uintptr {
+				ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7, a8}
+				var floats [8]uintptr
+				floats[0] = uintptr(math.Float64bits(f1))
+				floats[1] = uintptr(math.Float64bits(f2))
+				floats[2] = uintptr(math.Float64bits(f3))
+				return fastCallIF(cfn, ints, 8, floats, 3)
+			}
+			forceFuncPtr(fn, &impl)
+		} else {
+			impl := func(a1, a2, a3, a4, a5, a6, a7, a8 uintptr, f1, f2, f3 float64) {
+				ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7, a8}
+				var floats [8]uintptr
+				floats[0] = uintptr(math.Float64bits(f1))
+				floats[1] = uintptr(math.Float64bits(f2))
+				floats[2] = uintptr(math.Float64bits(f3))
+				fastCallIF(cfn, ints, 8, floats, 3)
+			}
+			forceFuncPtr(fn, &impl)
+		}
+	case 9:
+		if hasReturn {
+			impl := func(a1, a2, a3, a4, a5, a6, a7, a8, a9 uintptr, f1, f2, f3 float64) uintptr {
+				ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7, a8, a9}
+				var floats [8]uintptr
+				floats[0] = uintptr(math.Float64bits(f1))
+				floats[1] = uintptr(math.Float64bits(f2))
+				floats[2] = uintptr(math.Float64bits(f3))
+				return fastCallIF(cfn, ints, 9, floats, 3)
+			}
+			forceFuncPtr(fn, &impl)
+		} else {
+			impl := func(a1, a2, a3, a4, a5, a6, a7, a8, a9 uintptr, f1, f2, f3 float64) {
+				ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7, a8, a9}
+				var floats [8]uintptr
+				floats[0] = uintptr(math.Float64bits(f1))
+				floats[1] = uintptr(math.Float64bits(f2))
+				floats[2] = uintptr(math.Float64bits(f3))
+				fastCallIF(cfn, ints, 9, floats, 3)
+			}
+			forceFuncPtr(fn, &impl)
+		}
+	case 10:
+		if hasReturn {
+			impl := func(a1, a2, a3, a4, a5, a6, a7, a8, a9, a10 uintptr, f1, f2, f3 float64) uintptr {
+				ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7, a8, a9, a10}
+				var floats [8]uintptr
+				floats[0] = uintptr(math.Float64bits(f1))
+				floats[1] = uintptr(math.Float64bits(f2))
+				floats[2] = uintptr(math.Float64bits(f3))
+				return fastCallIF(cfn, ints, 10, floats, 3)
+			}
+			forceFuncPtr(fn, &impl)
+		} else {
+			impl := func(a1, a2, a3, a4, a5, a6, a7, a8, a9, a10 uintptr, f1, f2, f3 float64) {
+				ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7, a8, a9, a10}
+				var floats [8]uintptr
+				floats[0] = uintptr(math.Float64bits(f1))
+				floats[1] = uintptr(math.Float64bits(f2))
+				floats[2] = uintptr(math.Float64bits(f3))
+				fastCallIF(cfn, ints, 10, floats, 3)
+			}
+			forceFuncPtr(fn, &impl)
+		}
+	case 11:
+		if hasReturn {
+			impl := func(a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11 uintptr, f1, f2, f3 float64) uintptr {
+				ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11}
+				var floats [8]uintptr
+				floats[0] = uintptr(math.Float64bits(f1))
+				floats[1] = uintptr(math.Float64bits(f2))
+				floats[2] = uintptr(math.Float64bits(f3))
+				return fastCallIF(cfn, ints, 11, floats, 3)
+			}
+			forceFuncPtr(fn, &impl)
+		} else {
+			impl := func(a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11 uintptr, f1, f2, f3 float64) {
+				ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11}
+				var floats [8]uintptr
+				floats[0] = uintptr(math.Float64bits(f1))
+				floats[1] = uintptr(math.Float64bits(f2))
+				floats[2] = uintptr(math.Float64bits(f3))
+				fastCallIF(cfn, ints, 11, floats, 3)
+			}
+			forceFuncPtr(fn, &impl)
+		}
+	case 12:
+		if hasReturn {
+			impl := func(a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12 uintptr, f1, f2, f3 float64) uintptr {
+				ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12}
+				var floats [8]uintptr
+				floats[0] = uintptr(math.Float64bits(f1))
+				floats[1] = uintptr(math.Float64bits(f2))
+				floats[2] = uintptr(math.Float64bits(f3))
+				return fastCallIF(cfn, ints, 12, floats, 3)
+			}
+			forceFuncPtr(fn, &impl)
+		} else {
+			impl := func(a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12 uintptr, f1, f2, f3 float64) {
+				ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12}
+				var floats [8]uintptr
+				floats[0] = uintptr(math.Float64bits(f1))
+				floats[1] = uintptr(math.Float64bits(f2))
+				floats[2] = uintptr(math.Float64bits(f3))
+				fastCallIF(cfn, ints, 12, floats, 3)
+			}
+			forceFuncPtr(fn, &impl)
+		}
+	}
+}
+
+// Exported fast-call API: integer-only
+
+// FastCall0 calls a C function with 0 arguments without heap allocations.
+func FastCall0(cfn uintptr) uintptr { return fastCall0(cfn) }
+
+// FastCall1 calls a C function with 1 arguments without heap allocations.
+func FastCall1(cfn, a1 uintptr) uintptr { return fastCall1(cfn, a1) }
+
+// FastCall2 calls a C function with 2 arguments without heap allocations.
+func FastCall2(cfn, a1, a2 uintptr) uintptr { return fastCall2(cfn, a1, a2) }
+
+// FastCall3 calls a C function with 3 arguments without heap allocations.
+func FastCall3(cfn, a1, a2, a3 uintptr) uintptr { return fastCall3(cfn, a1, a2, a3) }
+
+// FastCall4 calls a C function with 4 arguments without heap allocations.
+func FastCall4(cfn, a1, a2, a3, a4 uintptr) uintptr { return fastCall4(cfn, a1, a2, a3, a4) }
+
+// FastCall5 calls a C function with 5 arguments without heap allocations.
+func FastCall5(cfn, a1, a2, a3, a4, a5 uintptr) uintptr { return fastCall5(cfn, a1, a2, a3, a4, a5) }
+
+// FastCall6 calls a C function with 6 arguments without heap allocations.
+func FastCall6(cfn, a1, a2, a3, a4, a5, a6 uintptr) uintptr {
+	return fastCall6(cfn, a1, a2, a3, a4, a5, a6)
+}
+
+// FastCall7 calls a C function with 7 arguments without heap allocations.
+func FastCall7(cfn, a1, a2, a3, a4, a5, a6, a7 uintptr) uintptr {
+	return fastCall7(cfn, a1, a2, a3, a4, a5, a6, a7)
+}
+
+// FastCall8 calls a C function with 8 arguments without heap allocations.
+func FastCall8(cfn, a1, a2, a3, a4, a5, a6, a7, a8 uintptr) uintptr {
+	return fastCall8(cfn, a1, a2, a3, a4, a5, a6, a7, a8)
+}
+
+// FastCall9 calls a C function with 9 arguments without heap allocations.
+func FastCall9(cfn, a1, a2, a3, a4, a5, a6, a7, a8, a9 uintptr) uintptr {
+	return fastCall9(cfn, a1, a2, a3, a4, a5, a6, a7, a8, a9)
+}
+
+// FastCall10 calls a C function with 10 arguments without heap allocations.
+func FastCall10(cfn, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10 uintptr) uintptr {
+	return fastCall10(cfn, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10)
+}
+
+// FastCall11 calls a C function with 11 arguments without heap allocations.
+func FastCall11(cfn, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11 uintptr) uintptr {
+	return fastCall11(cfn, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11)
+}
+
+// FastCall12 calls a C function with 12 arguments without heap allocations.
+func FastCall12(cfn, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12 uintptr) uintptr {
+	return fastCall12(cfn, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12)
+}
+
+// FastCall13 calls a C function with 13 arguments without heap allocations.
+func FastCall13(cfn, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13 uintptr) uintptr {
+	return fastCall13(cfn, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13)
+}
+
+// FastCall14 calls a C function with 14 arguments without heap allocations.
+func FastCall14(cfn, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14 uintptr) uintptr {
+	return fastCall14(cfn, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14)
+}
+
+// FastCall15 calls a C function with 15 arguments without heap allocations.
+func FastCall15(cfn, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15 uintptr) uintptr {
+	return fastCall15(cfn, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15)
+}
+
+// Exported fast-call API: N ints + 1 float
+
+// FastCall0F1 calls a C function with 0 integer args and 1 float.
+// The float arg must be pre-converted via math.Float32bits or math.Float64bits.
+func FastCall0F1(cfn, f1 uintptr) uintptr {
+	s := thePool.Get().(*syscall15Args)
+	s.fn = cfn
+	s.a1, s.a2, s.a3, s.a4, s.a5, s.a6, s.a7, s.a8 = 0, 0, 0, 0, 0, 0, 0, 0
+	s.a9, s.a10, s.a11, s.a12, s.a13, s.a14, s.a15 = 0, 0, 0, 0, 0, 0, 0
+	s.f1, s.f2, s.f3, s.f4, s.f5, s.f6, s.f7, s.f8 = f1, 0, 0, 0, 0, 0, 0, 0
+	s.arm64_r8 = 0
+	runtime_cgocall(syscall15XABI0, unsafe.Pointer(s))
+	r := s.a1
+	thePool.Put(s)
+	return r
+}
+
+// FastCall1F1 calls a C function with 1 integer args and 1 float.
+// The float arg must be pre-converted via math.Float32bits or math.Float64bits.
+func FastCall1F1(cfn, a1, f1 uintptr) uintptr {
+	s := thePool.Get().(*syscall15Args)
+	s.fn = cfn
+	s.a1, s.a2, s.a3, s.a4, s.a5, s.a6, s.a7, s.a8 = a1, 0, 0, 0, 0, 0, 0, 0
+	s.a9, s.a10, s.a11, s.a12, s.a13, s.a14, s.a15 = 0, 0, 0, 0, 0, 0, 0
+	s.f1, s.f2, s.f3, s.f4, s.f5, s.f6, s.f7, s.f8 = f1, 0, 0, 0, 0, 0, 0, 0
+	s.arm64_r8 = 0
+	runtime_cgocall(syscall15XABI0, unsafe.Pointer(s))
+	r := s.a1
+	thePool.Put(s)
+	return r
+}
+
+// FastCall2F1 calls a C function with 2 integer args and 1 float.
+// The float arg must be pre-converted via math.Float32bits or math.Float64bits.
+func FastCall2F1(cfn, a1, a2, f1 uintptr) uintptr {
+	s := thePool.Get().(*syscall15Args)
+	s.fn = cfn
+	s.a1, s.a2, s.a3, s.a4, s.a5, s.a6, s.a7, s.a8 = a1, a2, 0, 0, 0, 0, 0, 0
+	s.a9, s.a10, s.a11, s.a12, s.a13, s.a14, s.a15 = 0, 0, 0, 0, 0, 0, 0
+	s.f1, s.f2, s.f3, s.f4, s.f5, s.f6, s.f7, s.f8 = f1, 0, 0, 0, 0, 0, 0, 0
+	s.arm64_r8 = 0
+	runtime_cgocall(syscall15XABI0, unsafe.Pointer(s))
+	r := s.a1
+	thePool.Put(s)
+	return r
+}
+
+// FastCall3F1 calls a C function with 3 integer args and 1 float.
+// The float arg must be pre-converted via math.Float32bits or math.Float64bits.
+func FastCall3F1(cfn, a1, a2, a3, f1 uintptr) uintptr {
+	s := thePool.Get().(*syscall15Args)
+	s.fn = cfn
+	s.a1, s.a2, s.a3, s.a4, s.a5, s.a6, s.a7, s.a8 = a1, a2, a3, 0, 0, 0, 0, 0
+	s.a9, s.a10, s.a11, s.a12, s.a13, s.a14, s.a15 = 0, 0, 0, 0, 0, 0, 0
+	s.f1, s.f2, s.f3, s.f4, s.f5, s.f6, s.f7, s.f8 = f1, 0, 0, 0, 0, 0, 0, 0
+	s.arm64_r8 = 0
+	runtime_cgocall(syscall15XABI0, unsafe.Pointer(s))
+	r := s.a1
+	thePool.Put(s)
+	return r
+}
+
+// FastCall4F1 calls a C function with 4 integer args and 1 float.
+// The float arg must be pre-converted via math.Float32bits or math.Float64bits.
+func FastCall4F1(cfn, a1, a2, a3, a4, f1 uintptr) uintptr {
+	s := thePool.Get().(*syscall15Args)
+	s.fn = cfn
+	s.a1, s.a2, s.a3, s.a4, s.a5, s.a6, s.a7, s.a8 = a1, a2, a3, a4, 0, 0, 0, 0
+	s.a9, s.a10, s.a11, s.a12, s.a13, s.a14, s.a15 = 0, 0, 0, 0, 0, 0, 0
+	s.f1, s.f2, s.f3, s.f4, s.f5, s.f6, s.f7, s.f8 = f1, 0, 0, 0, 0, 0, 0, 0
+	s.arm64_r8 = 0
+	runtime_cgocall(syscall15XABI0, unsafe.Pointer(s))
+	r := s.a1
+	thePool.Put(s)
+	return r
+}
+
+// FastCall5F1 calls a C function with 5 integer args and 1 float.
+// The float arg must be pre-converted via math.Float32bits or math.Float64bits.
+func FastCall5F1(cfn, a1, a2, a3, a4, a5, f1 uintptr) uintptr {
+	s := thePool.Get().(*syscall15Args)
+	s.fn = cfn
+	s.a1, s.a2, s.a3, s.a4, s.a5, s.a6, s.a7, s.a8 = a1, a2, a3, a4, a5, 0, 0, 0
+	s.a9, s.a10, s.a11, s.a12, s.a13, s.a14, s.a15 = 0, 0, 0, 0, 0, 0, 0
+	s.f1, s.f2, s.f3, s.f4, s.f5, s.f6, s.f7, s.f8 = f1, 0, 0, 0, 0, 0, 0, 0
+	s.arm64_r8 = 0
+	runtime_cgocall(syscall15XABI0, unsafe.Pointer(s))
+	r := s.a1
+	thePool.Put(s)
+	return r
+}
+
+// FastCall6F1 calls a C function with 6 integer args and 1 float.
+// The float arg must be pre-converted via math.Float32bits or math.Float64bits.
+func FastCall6F1(cfn, a1, a2, a3, a4, a5, a6, f1 uintptr) uintptr {
+	s := thePool.Get().(*syscall15Args)
+	s.fn = cfn
+	s.a1, s.a2, s.a3, s.a4, s.a5, s.a6, s.a7, s.a8 = a1, a2, a3, a4, a5, a6, 0, 0
+	s.a9, s.a10, s.a11, s.a12, s.a13, s.a14, s.a15 = 0, 0, 0, 0, 0, 0, 0
+	s.f1, s.f2, s.f3, s.f4, s.f5, s.f6, s.f7, s.f8 = f1, 0, 0, 0, 0, 0, 0, 0
+	s.arm64_r8 = 0
+	runtime_cgocall(syscall15XABI0, unsafe.Pointer(s))
+	r := s.a1
+	thePool.Put(s)
+	return r
+}
+
+// FastCall7F1 calls a C function with 7 integer args and 1 float.
+// The float arg must be pre-converted via math.Float32bits or math.Float64bits.
+func FastCall7F1(cfn, a1, a2, a3, a4, a5, a6, a7, f1 uintptr) uintptr {
+	s := thePool.Get().(*syscall15Args)
+	s.fn = cfn
+	s.a1, s.a2, s.a3, s.a4, s.a5, s.a6, s.a7, s.a8 = a1, a2, a3, a4, a5, a6, a7, 0
+	s.a9, s.a10, s.a11, s.a12, s.a13, s.a14, s.a15 = 0, 0, 0, 0, 0, 0, 0
+	s.f1, s.f2, s.f3, s.f4, s.f5, s.f6, s.f7, s.f8 = f1, 0, 0, 0, 0, 0, 0, 0
+	s.arm64_r8 = 0
+	runtime_cgocall(syscall15XABI0, unsafe.Pointer(s))
+	r := s.a1
+	thePool.Put(s)
+	return r
+}
+
+// FastCall8F1 calls a C function with 8 integer args and 1 float.
+// The float arg must be pre-converted via math.Float32bits or math.Float64bits.
+func FastCall8F1(cfn, a1, a2, a3, a4, a5, a6, a7, a8, f1 uintptr) uintptr {
+	s := thePool.Get().(*syscall15Args)
+	s.fn = cfn
+	s.a1, s.a2, s.a3, s.a4, s.a5, s.a6, s.a7, s.a8 = a1, a2, a3, a4, a5, a6, a7, a8
+	s.a9, s.a10, s.a11, s.a12, s.a13, s.a14, s.a15 = 0, 0, 0, 0, 0, 0, 0
+	s.f1, s.f2, s.f3, s.f4, s.f5, s.f6, s.f7, s.f8 = f1, 0, 0, 0, 0, 0, 0, 0
+	s.arm64_r8 = 0
+	runtime_cgocall(syscall15XABI0, unsafe.Pointer(s))
+	r := s.a1
+	thePool.Put(s)
+	return r
+}
+
+// FastCall9F1 calls a C function with 9 integer args and 1 float.
+// The float arg must be pre-converted via math.Float32bits or math.Float64bits.
+func FastCall9F1(cfn, a1, a2, a3, a4, a5, a6, a7, a8, a9, f1 uintptr) uintptr {
+	s := thePool.Get().(*syscall15Args)
+	s.fn = cfn
+	s.a1, s.a2, s.a3, s.a4, s.a5, s.a6, s.a7, s.a8 = a1, a2, a3, a4, a5, a6, a7, a8
+	s.a9 = a9
+	s.a10, s.a11, s.a12, s.a13, s.a14, s.a15 = 0, 0, 0, 0, 0, 0
+	s.f1, s.f2, s.f3, s.f4, s.f5, s.f6, s.f7, s.f8 = f1, 0, 0, 0, 0, 0, 0, 0
+	s.arm64_r8 = 0
+	runtime_cgocall(syscall15XABI0, unsafe.Pointer(s))
+	r := s.a1
+	thePool.Put(s)
+	return r
+}
+
+// FastCall10F1 calls a C function with 10 integer args and 1 float.
+// The float arg must be pre-converted via math.Float32bits or math.Float64bits.
+func FastCall10F1(cfn, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, f1 uintptr) uintptr {
+	s := thePool.Get().(*syscall15Args)
+	s.fn = cfn
+	s.a1, s.a2, s.a3, s.a4, s.a5, s.a6, s.a7, s.a8 = a1, a2, a3, a4, a5, a6, a7, a8
+	s.a9, s.a10 = a9, a10
+	s.a11, s.a12, s.a13, s.a14, s.a15 = 0, 0, 0, 0, 0
+	s.f1, s.f2, s.f3, s.f4, s.f5, s.f6, s.f7, s.f8 = f1, 0, 0, 0, 0, 0, 0, 0
+	s.arm64_r8 = 0
+	runtime_cgocall(syscall15XABI0, unsafe.Pointer(s))
+	r := s.a1
+	thePool.Put(s)
+	return r
+}
+
+// FastCall11F1 calls a C function with 11 integer args and 1 float.
+// The float arg must be pre-converted via math.Float32bits or math.Float64bits.
+func FastCall11F1(cfn, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, f1 uintptr) uintptr {
+	s := thePool.Get().(*syscall15Args)
+	s.fn = cfn
+	s.a1, s.a2, s.a3, s.a4, s.a5, s.a6, s.a7, s.a8 = a1, a2, a3, a4, a5, a6, a7, a8
+	s.a9, s.a10, s.a11 = a9, a10, a11
+	s.a12, s.a13, s.a14, s.a15 = 0, 0, 0, 0
+	s.f1, s.f2, s.f3, s.f4, s.f5, s.f6, s.f7, s.f8 = f1, 0, 0, 0, 0, 0, 0, 0
+	s.arm64_r8 = 0
+	runtime_cgocall(syscall15XABI0, unsafe.Pointer(s))
+	r := s.a1
+	thePool.Put(s)
+	return r
+}
+
+// FastCall12F1 calls a C function with 12 integer args and 1 float.
+// The float arg must be pre-converted via math.Float32bits or math.Float64bits.
+func FastCall12F1(cfn, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, f1 uintptr) uintptr {
+	s := thePool.Get().(*syscall15Args)
+	s.fn = cfn
+	s.a1, s.a2, s.a3, s.a4, s.a5, s.a6, s.a7, s.a8 = a1, a2, a3, a4, a5, a6, a7, a8
+	s.a9, s.a10, s.a11, s.a12 = a9, a10, a11, a12
+	s.a13, s.a14, s.a15 = 0, 0, 0
+	s.f1, s.f2, s.f3, s.f4, s.f5, s.f6, s.f7, s.f8 = f1, 0, 0, 0, 0, 0, 0, 0
+	s.arm64_r8 = 0
+	runtime_cgocall(syscall15XABI0, unsafe.Pointer(s))
+	r := s.a1
+	thePool.Put(s)
+	return r
+}
+
+// FastCall13F1 calls a C function with 13 integer args and 1 float.
+// The float arg must be pre-converted via math.Float32bits or math.Float64bits.
+func FastCall13F1(cfn, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, f1 uintptr) uintptr {
+	s := thePool.Get().(*syscall15Args)
+	s.fn = cfn
+	s.a1, s.a2, s.a3, s.a4, s.a5, s.a6, s.a7, s.a8 = a1, a2, a3, a4, a5, a6, a7, a8
+	s.a9, s.a10, s.a11, s.a12, s.a13 = a9, a10, a11, a12, a13
+	s.a14, s.a15 = 0, 0
+	s.f1, s.f2, s.f3, s.f4, s.f5, s.f6, s.f7, s.f8 = f1, 0, 0, 0, 0, 0, 0, 0
+	s.arm64_r8 = 0
+	runtime_cgocall(syscall15XABI0, unsafe.Pointer(s))
+	r := s.a1
+	thePool.Put(s)
+	return r
+}
+
+// FastCall14F1 calls a C function with 14 integer args and 1 float.
+// The float arg must be pre-converted via math.Float32bits or math.Float64bits.
+func FastCall14F1(cfn, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, f1 uintptr) uintptr {
+	s := thePool.Get().(*syscall15Args)
+	s.fn = cfn
+	s.a1, s.a2, s.a3, s.a4, s.a5, s.a6, s.a7, s.a8 = a1, a2, a3, a4, a5, a6, a7, a8
+	s.a9, s.a10, s.a11, s.a12, s.a13, s.a14 = a9, a10, a11, a12, a13, a14
+	s.a15 = 0
+	s.f1, s.f2, s.f3, s.f4, s.f5, s.f6, s.f7, s.f8 = f1, 0, 0, 0, 0, 0, 0, 0
+	s.arm64_r8 = 0
+	runtime_cgocall(syscall15XABI0, unsafe.Pointer(s))
+	r := s.a1
+	thePool.Put(s)
+	return r
+}
+
+// Exported fast-call API: N ints + 1 double
+
+// FastCall0D1 calls a C function with 0 integer args and 1 double.
+// The float arg must be pre-converted via math.Float32bits or math.Float64bits.
+func FastCall0D1(cfn, f1 uintptr) uintptr {
+	s := thePool.Get().(*syscall15Args)
+	s.fn = cfn
+	s.a1, s.a2, s.a3, s.a4, s.a5, s.a6, s.a7, s.a8 = 0, 0, 0, 0, 0, 0, 0, 0
+	s.a9, s.a10, s.a11, s.a12, s.a13, s.a14, s.a15 = 0, 0, 0, 0, 0, 0, 0
+	s.f1, s.f2, s.f3, s.f4, s.f5, s.f6, s.f7, s.f8 = f1, 0, 0, 0, 0, 0, 0, 0
+	s.arm64_r8 = 0
+	runtime_cgocall(syscall15XABI0, unsafe.Pointer(s))
+	r := s.a1
+	thePool.Put(s)
+	return r
+}
+
+// FastCall1D1 calls a C function with 1 integer args and 1 double.
+// The float arg must be pre-converted via math.Float32bits or math.Float64bits.
+func FastCall1D1(cfn, a1, f1 uintptr) uintptr {
+	s := thePool.Get().(*syscall15Args)
+	s.fn = cfn
+	s.a1, s.a2, s.a3, s.a4, s.a5, s.a6, s.a7, s.a8 = a1, 0, 0, 0, 0, 0, 0, 0
+	s.a9, s.a10, s.a11, s.a12, s.a13, s.a14, s.a15 = 0, 0, 0, 0, 0, 0, 0
+	s.f1, s.f2, s.f3, s.f4, s.f5, s.f6, s.f7, s.f8 = f1, 0, 0, 0, 0, 0, 0, 0
+	s.arm64_r8 = 0
+	runtime_cgocall(syscall15XABI0, unsafe.Pointer(s))
+	r := s.a1
+	thePool.Put(s)
+	return r
+}
+
+// FastCall2D1 calls a C function with 2 integer args and 1 double.
+// The float arg must be pre-converted via math.Float32bits or math.Float64bits.
+func FastCall2D1(cfn, a1, a2, f1 uintptr) uintptr {
+	s := thePool.Get().(*syscall15Args)
+	s.fn = cfn
+	s.a1, s.a2, s.a3, s.a4, s.a5, s.a6, s.a7, s.a8 = a1, a2, 0, 0, 0, 0, 0, 0
+	s.a9, s.a10, s.a11, s.a12, s.a13, s.a14, s.a15 = 0, 0, 0, 0, 0, 0, 0
+	s.f1, s.f2, s.f3, s.f4, s.f5, s.f6, s.f7, s.f8 = f1, 0, 0, 0, 0, 0, 0, 0
+	s.arm64_r8 = 0
+	runtime_cgocall(syscall15XABI0, unsafe.Pointer(s))
+	r := s.a1
+	thePool.Put(s)
+	return r
+}
+
+// FastCall3D1 calls a C function with 3 integer args and 1 double.
+// The float arg must be pre-converted via math.Float32bits or math.Float64bits.
+func FastCall3D1(cfn, a1, a2, a3, f1 uintptr) uintptr {
+	s := thePool.Get().(*syscall15Args)
+	s.fn = cfn
+	s.a1, s.a2, s.a3, s.a4, s.a5, s.a6, s.a7, s.a8 = a1, a2, a3, 0, 0, 0, 0, 0
+	s.a9, s.a10, s.a11, s.a12, s.a13, s.a14, s.a15 = 0, 0, 0, 0, 0, 0, 0
+	s.f1, s.f2, s.f3, s.f4, s.f5, s.f6, s.f7, s.f8 = f1, 0, 0, 0, 0, 0, 0, 0
+	s.arm64_r8 = 0
+	runtime_cgocall(syscall15XABI0, unsafe.Pointer(s))
+	r := s.a1
+	thePool.Put(s)
+	return r
+}
+
+// FastCall4D1 calls a C function with 4 integer args and 1 double.
+// The float arg must be pre-converted via math.Float32bits or math.Float64bits.
+func FastCall4D1(cfn, a1, a2, a3, a4, f1 uintptr) uintptr {
+	s := thePool.Get().(*syscall15Args)
+	s.fn = cfn
+	s.a1, s.a2, s.a3, s.a4, s.a5, s.a6, s.a7, s.a8 = a1, a2, a3, a4, 0, 0, 0, 0
+	s.a9, s.a10, s.a11, s.a12, s.a13, s.a14, s.a15 = 0, 0, 0, 0, 0, 0, 0
+	s.f1, s.f2, s.f3, s.f4, s.f5, s.f6, s.f7, s.f8 = f1, 0, 0, 0, 0, 0, 0, 0
+	s.arm64_r8 = 0
+	runtime_cgocall(syscall15XABI0, unsafe.Pointer(s))
+	r := s.a1
+	thePool.Put(s)
+	return r
+}
+
+// FastCall5D1 calls a C function with 5 integer args and 1 double.
+// The float arg must be pre-converted via math.Float32bits or math.Float64bits.
+func FastCall5D1(cfn, a1, a2, a3, a4, a5, f1 uintptr) uintptr {
+	s := thePool.Get().(*syscall15Args)
+	s.fn = cfn
+	s.a1, s.a2, s.a3, s.a4, s.a5, s.a6, s.a7, s.a8 = a1, a2, a3, a4, a5, 0, 0, 0
+	s.a9, s.a10, s.a11, s.a12, s.a13, s.a14, s.a15 = 0, 0, 0, 0, 0, 0, 0
+	s.f1, s.f2, s.f3, s.f4, s.f5, s.f6, s.f7, s.f8 = f1, 0, 0, 0, 0, 0, 0, 0
+	s.arm64_r8 = 0
+	runtime_cgocall(syscall15XABI0, unsafe.Pointer(s))
+	r := s.a1
+	thePool.Put(s)
+	return r
+}
+
+// FastCall6D1 calls a C function with 6 integer args and 1 double.
+// The float arg must be pre-converted via math.Float32bits or math.Float64bits.
+func FastCall6D1(cfn, a1, a2, a3, a4, a5, a6, f1 uintptr) uintptr {
+	s := thePool.Get().(*syscall15Args)
+	s.fn = cfn
+	s.a1, s.a2, s.a3, s.a4, s.a5, s.a6, s.a7, s.a8 = a1, a2, a3, a4, a5, a6, 0, 0
+	s.a9, s.a10, s.a11, s.a12, s.a13, s.a14, s.a15 = 0, 0, 0, 0, 0, 0, 0
+	s.f1, s.f2, s.f3, s.f4, s.f5, s.f6, s.f7, s.f8 = f1, 0, 0, 0, 0, 0, 0, 0
+	s.arm64_r8 = 0
+	runtime_cgocall(syscall15XABI0, unsafe.Pointer(s))
+	r := s.a1
+	thePool.Put(s)
+	return r
+}
+
+// FastCall7D1 calls a C function with 7 integer args and 1 double.
+// The float arg must be pre-converted via math.Float32bits or math.Float64bits.
+func FastCall7D1(cfn, a1, a2, a3, a4, a5, a6, a7, f1 uintptr) uintptr {
+	s := thePool.Get().(*syscall15Args)
+	s.fn = cfn
+	s.a1, s.a2, s.a3, s.a4, s.a5, s.a6, s.a7, s.a8 = a1, a2, a3, a4, a5, a6, a7, 0
+	s.a9, s.a10, s.a11, s.a12, s.a13, s.a14, s.a15 = 0, 0, 0, 0, 0, 0, 0
+	s.f1, s.f2, s.f3, s.f4, s.f5, s.f6, s.f7, s.f8 = f1, 0, 0, 0, 0, 0, 0, 0
+	s.arm64_r8 = 0
+	runtime_cgocall(syscall15XABI0, unsafe.Pointer(s))
+	r := s.a1
+	thePool.Put(s)
+	return r
+}
+
+// FastCall8D1 calls a C function with 8 integer args and 1 double.
+// The float arg must be pre-converted via math.Float32bits or math.Float64bits.
+func FastCall8D1(cfn, a1, a2, a3, a4, a5, a6, a7, a8, f1 uintptr) uintptr {
+	s := thePool.Get().(*syscall15Args)
+	s.fn = cfn
+	s.a1, s.a2, s.a3, s.a4, s.a5, s.a6, s.a7, s.a8 = a1, a2, a3, a4, a5, a6, a7, a8
+	s.a9, s.a10, s.a11, s.a12, s.a13, s.a14, s.a15 = 0, 0, 0, 0, 0, 0, 0
+	s.f1, s.f2, s.f3, s.f4, s.f5, s.f6, s.f7, s.f8 = f1, 0, 0, 0, 0, 0, 0, 0
+	s.arm64_r8 = 0
+	runtime_cgocall(syscall15XABI0, unsafe.Pointer(s))
+	r := s.a1
+	thePool.Put(s)
+	return r
+}
+
+// FastCall9D1 calls a C function with 9 integer args and 1 double.
+// The float arg must be pre-converted via math.Float32bits or math.Float64bits.
+func FastCall9D1(cfn, a1, a2, a3, a4, a5, a6, a7, a8, a9, f1 uintptr) uintptr {
+	s := thePool.Get().(*syscall15Args)
+	s.fn = cfn
+	s.a1, s.a2, s.a3, s.a4, s.a5, s.a6, s.a7, s.a8 = a1, a2, a3, a4, a5, a6, a7, a8
+	s.a9 = a9
+	s.a10, s.a11, s.a12, s.a13, s.a14, s.a15 = 0, 0, 0, 0, 0, 0
+	s.f1, s.f2, s.f3, s.f4, s.f5, s.f6, s.f7, s.f8 = f1, 0, 0, 0, 0, 0, 0, 0
+	s.arm64_r8 = 0
+	runtime_cgocall(syscall15XABI0, unsafe.Pointer(s))
+	r := s.a1
+	thePool.Put(s)
+	return r
+}
+
+// FastCall10D1 calls a C function with 10 integer args and 1 double.
+// The float arg must be pre-converted via math.Float32bits or math.Float64bits.
+func FastCall10D1(cfn, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, f1 uintptr) uintptr {
+	s := thePool.Get().(*syscall15Args)
+	s.fn = cfn
+	s.a1, s.a2, s.a3, s.a4, s.a5, s.a6, s.a7, s.a8 = a1, a2, a3, a4, a5, a6, a7, a8
+	s.a9, s.a10 = a9, a10
+	s.a11, s.a12, s.a13, s.a14, s.a15 = 0, 0, 0, 0, 0
+	s.f1, s.f2, s.f3, s.f4, s.f5, s.f6, s.f7, s.f8 = f1, 0, 0, 0, 0, 0, 0, 0
+	s.arm64_r8 = 0
+	runtime_cgocall(syscall15XABI0, unsafe.Pointer(s))
+	r := s.a1
+	thePool.Put(s)
+	return r
+}
+
+// FastCall11D1 calls a C function with 11 integer args and 1 double.
+// The float arg must be pre-converted via math.Float32bits or math.Float64bits.
+func FastCall11D1(cfn, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, f1 uintptr) uintptr {
+	s := thePool.Get().(*syscall15Args)
+	s.fn = cfn
+	s.a1, s.a2, s.a3, s.a4, s.a5, s.a6, s.a7, s.a8 = a1, a2, a3, a4, a5, a6, a7, a8
+	s.a9, s.a10, s.a11 = a9, a10, a11
+	s.a12, s.a13, s.a14, s.a15 = 0, 0, 0, 0
+	s.f1, s.f2, s.f3, s.f4, s.f5, s.f6, s.f7, s.f8 = f1, 0, 0, 0, 0, 0, 0, 0
+	s.arm64_r8 = 0
+	runtime_cgocall(syscall15XABI0, unsafe.Pointer(s))
+	r := s.a1
+	thePool.Put(s)
+	return r
+}
+
+// FastCall12D1 calls a C function with 12 integer args and 1 double.
+// The float arg must be pre-converted via math.Float32bits or math.Float64bits.
+func FastCall12D1(cfn, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, f1 uintptr) uintptr {
+	s := thePool.Get().(*syscall15Args)
+	s.fn = cfn
+	s.a1, s.a2, s.a3, s.a4, s.a5, s.a6, s.a7, s.a8 = a1, a2, a3, a4, a5, a6, a7, a8
+	s.a9, s.a10, s.a11, s.a12 = a9, a10, a11, a12
+	s.a13, s.a14, s.a15 = 0, 0, 0
+	s.f1, s.f2, s.f3, s.f4, s.f5, s.f6, s.f7, s.f8 = f1, 0, 0, 0, 0, 0, 0, 0
+	s.arm64_r8 = 0
+	runtime_cgocall(syscall15XABI0, unsafe.Pointer(s))
+	r := s.a1
+	thePool.Put(s)
+	return r
+}
+
+// FastCall13D1 calls a C function with 13 integer args and 1 double.
+// The float arg must be pre-converted via math.Float32bits or math.Float64bits.
+func FastCall13D1(cfn, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, f1 uintptr) uintptr {
+	s := thePool.Get().(*syscall15Args)
+	s.fn = cfn
+	s.a1, s.a2, s.a3, s.a4, s.a5, s.a6, s.a7, s.a8 = a1, a2, a3, a4, a5, a6, a7, a8
+	s.a9, s.a10, s.a11, s.a12, s.a13 = a9, a10, a11, a12, a13
+	s.a14, s.a15 = 0, 0
+	s.f1, s.f2, s.f3, s.f4, s.f5, s.f6, s.f7, s.f8 = f1, 0, 0, 0, 0, 0, 0, 0
+	s.arm64_r8 = 0
+	runtime_cgocall(syscall15XABI0, unsafe.Pointer(s))
+	r := s.a1
+	thePool.Put(s)
+	return r
+}
+
+// FastCall14D1 calls a C function with 14 integer args and 1 double.
+// The float arg must be pre-converted via math.Float32bits or math.Float64bits.
+func FastCall14D1(cfn, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, f1 uintptr) uintptr {
+	s := thePool.Get().(*syscall15Args)
+	s.fn = cfn
+	s.a1, s.a2, s.a3, s.a4, s.a5, s.a6, s.a7, s.a8 = a1, a2, a3, a4, a5, a6, a7, a8
+	s.a9, s.a10, s.a11, s.a12, s.a13, s.a14 = a9, a10, a11, a12, a13, a14
+	s.a15 = 0
+	s.f1, s.f2, s.f3, s.f4, s.f5, s.f6, s.f7, s.f8 = f1, 0, 0, 0, 0, 0, 0, 0
+	s.arm64_r8 = 0
+	runtime_cgocall(syscall15XABI0, unsafe.Pointer(s))
+	r := s.a1
+	thePool.Put(s)
+	return r
+}
+
+// Exported fast-call API: N ints + 3 doubles
+
+// FastCall0D3 calls a C function with 0 integer args and 3 doubles.
+// Float args must be pre-converted via math.Float32bits or math.Float64bits.
+func FastCall0D3(cfn, f1, f2, f3 uintptr) uintptr {
+	s := thePool.Get().(*syscall15Args)
+	s.fn = cfn
+	s.a1, s.a2, s.a3, s.a4, s.a5, s.a6, s.a7, s.a8 = 0, 0, 0, 0, 0, 0, 0, 0
+	s.a9, s.a10, s.a11, s.a12, s.a13, s.a14, s.a15 = 0, 0, 0, 0, 0, 0, 0
+	s.f1, s.f2, s.f3, s.f4, s.f5, s.f6, s.f7, s.f8 = f1, f2, f3, 0, 0, 0, 0, 0
+	s.arm64_r8 = 0
+	runtime_cgocall(syscall15XABI0, unsafe.Pointer(s))
+	r := s.a1
+	thePool.Put(s)
+	return r
+}
+
+// FastCall1D3 calls a C function with 1 integer args and 3 doubles.
+// Float args must be pre-converted via math.Float32bits or math.Float64bits.
+func FastCall1D3(cfn, a1, f1, f2, f3 uintptr) uintptr {
+	s := thePool.Get().(*syscall15Args)
+	s.fn = cfn
+	s.a1, s.a2, s.a3, s.a4, s.a5, s.a6, s.a7, s.a8 = a1, 0, 0, 0, 0, 0, 0, 0
+	s.a9, s.a10, s.a11, s.a12, s.a13, s.a14, s.a15 = 0, 0, 0, 0, 0, 0, 0
+	s.f1, s.f2, s.f3, s.f4, s.f5, s.f6, s.f7, s.f8 = f1, f2, f3, 0, 0, 0, 0, 0
+	s.arm64_r8 = 0
+	runtime_cgocall(syscall15XABI0, unsafe.Pointer(s))
+	r := s.a1
+	thePool.Put(s)
+	return r
+}
+
+// FastCall2D3 calls a C function with 2 integer args and 3 doubles.
+// Float args must be pre-converted via math.Float32bits or math.Float64bits.
+func FastCall2D3(cfn, a1, a2, f1, f2, f3 uintptr) uintptr {
+	s := thePool.Get().(*syscall15Args)
+	s.fn = cfn
+	s.a1, s.a2, s.a3, s.a4, s.a5, s.a6, s.a7, s.a8 = a1, a2, 0, 0, 0, 0, 0, 0
+	s.a9, s.a10, s.a11, s.a12, s.a13, s.a14, s.a15 = 0, 0, 0, 0, 0, 0, 0
+	s.f1, s.f2, s.f3, s.f4, s.f5, s.f6, s.f7, s.f8 = f1, f2, f3, 0, 0, 0, 0, 0
+	s.arm64_r8 = 0
+	runtime_cgocall(syscall15XABI0, unsafe.Pointer(s))
+	r := s.a1
+	thePool.Put(s)
+	return r
+}
+
+// FastCall3D3 calls a C function with 3 integer args and 3 doubles.
+// Float args must be pre-converted via math.Float32bits or math.Float64bits.
+func FastCall3D3(cfn, a1, a2, a3, f1, f2, f3 uintptr) uintptr {
+	s := thePool.Get().(*syscall15Args)
+	s.fn = cfn
+	s.a1, s.a2, s.a3, s.a4, s.a5, s.a6, s.a7, s.a8 = a1, a2, a3, 0, 0, 0, 0, 0
+	s.a9, s.a10, s.a11, s.a12, s.a13, s.a14, s.a15 = 0, 0, 0, 0, 0, 0, 0
+	s.f1, s.f2, s.f3, s.f4, s.f5, s.f6, s.f7, s.f8 = f1, f2, f3, 0, 0, 0, 0, 0
+	s.arm64_r8 = 0
+	runtime_cgocall(syscall15XABI0, unsafe.Pointer(s))
+	r := s.a1
+	thePool.Put(s)
+	return r
+}
+
+// FastCall4D3 calls a C function with 4 integer args and 3 doubles.
+// Float args must be pre-converted via math.Float32bits or math.Float64bits.
+func FastCall4D3(cfn, a1, a2, a3, a4, f1, f2, f3 uintptr) uintptr {
+	s := thePool.Get().(*syscall15Args)
+	s.fn = cfn
+	s.a1, s.a2, s.a3, s.a4, s.a5, s.a6, s.a7, s.a8 = a1, a2, a3, a4, 0, 0, 0, 0
+	s.a9, s.a10, s.a11, s.a12, s.a13, s.a14, s.a15 = 0, 0, 0, 0, 0, 0, 0
+	s.f1, s.f2, s.f3, s.f4, s.f5, s.f6, s.f7, s.f8 = f1, f2, f3, 0, 0, 0, 0, 0
+	s.arm64_r8 = 0
+	runtime_cgocall(syscall15XABI0, unsafe.Pointer(s))
+	r := s.a1
+	thePool.Put(s)
+	return r
+}
+
+// FastCall5D3 calls a C function with 5 integer args and 3 doubles.
+// Float args must be pre-converted via math.Float32bits or math.Float64bits.
+func FastCall5D3(cfn, a1, a2, a3, a4, a5, f1, f2, f3 uintptr) uintptr {
+	s := thePool.Get().(*syscall15Args)
+	s.fn = cfn
+	s.a1, s.a2, s.a3, s.a4, s.a5, s.a6, s.a7, s.a8 = a1, a2, a3, a4, a5, 0, 0, 0
+	s.a9, s.a10, s.a11, s.a12, s.a13, s.a14, s.a15 = 0, 0, 0, 0, 0, 0, 0
+	s.f1, s.f2, s.f3, s.f4, s.f5, s.f6, s.f7, s.f8 = f1, f2, f3, 0, 0, 0, 0, 0
+	s.arm64_r8 = 0
+	runtime_cgocall(syscall15XABI0, unsafe.Pointer(s))
+	r := s.a1
+	thePool.Put(s)
+	return r
+}
+
+// FastCall6D3 calls a C function with 6 integer args and 3 doubles.
+// Float args must be pre-converted via math.Float32bits or math.Float64bits.
+func FastCall6D3(cfn, a1, a2, a3, a4, a5, a6, f1, f2, f3 uintptr) uintptr {
+	s := thePool.Get().(*syscall15Args)
+	s.fn = cfn
+	s.a1, s.a2, s.a3, s.a4, s.a5, s.a6, s.a7, s.a8 = a1, a2, a3, a4, a5, a6, 0, 0
+	s.a9, s.a10, s.a11, s.a12, s.a13, s.a14, s.a15 = 0, 0, 0, 0, 0, 0, 0
+	s.f1, s.f2, s.f3, s.f4, s.f5, s.f6, s.f7, s.f8 = f1, f2, f3, 0, 0, 0, 0, 0
+	s.arm64_r8 = 0
+	runtime_cgocall(syscall15XABI0, unsafe.Pointer(s))
+	r := s.a1
+	thePool.Put(s)
+	return r
+}
+
+// FastCall7D3 calls a C function with 7 integer args and 3 doubles.
+// Float args must be pre-converted via math.Float32bits or math.Float64bits.
+func FastCall7D3(cfn, a1, a2, a3, a4, a5, a6, a7, f1, f2, f3 uintptr) uintptr {
+	s := thePool.Get().(*syscall15Args)
+	s.fn = cfn
+	s.a1, s.a2, s.a3, s.a4, s.a5, s.a6, s.a7, s.a8 = a1, a2, a3, a4, a5, a6, a7, 0
+	s.a9, s.a10, s.a11, s.a12, s.a13, s.a14, s.a15 = 0, 0, 0, 0, 0, 0, 0
+	s.f1, s.f2, s.f3, s.f4, s.f5, s.f6, s.f7, s.f8 = f1, f2, f3, 0, 0, 0, 0, 0
+	s.arm64_r8 = 0
+	runtime_cgocall(syscall15XABI0, unsafe.Pointer(s))
+	r := s.a1
+	thePool.Put(s)
+	return r
+}
+
+// FastCall8D3 calls a C function with 8 integer args and 3 doubles.
+// Float args must be pre-converted via math.Float32bits or math.Float64bits.
+func FastCall8D3(cfn, a1, a2, a3, a4, a5, a6, a7, a8, f1, f2, f3 uintptr) uintptr {
+	s := thePool.Get().(*syscall15Args)
+	s.fn = cfn
+	s.a1, s.a2, s.a3, s.a4, s.a5, s.a6, s.a7, s.a8 = a1, a2, a3, a4, a5, a6, a7, a8
+	s.a9, s.a10, s.a11, s.a12, s.a13, s.a14, s.a15 = 0, 0, 0, 0, 0, 0, 0
+	s.f1, s.f2, s.f3, s.f4, s.f5, s.f6, s.f7, s.f8 = f1, f2, f3, 0, 0, 0, 0, 0
+	s.arm64_r8 = 0
+	runtime_cgocall(syscall15XABI0, unsafe.Pointer(s))
+	r := s.a1
+	thePool.Put(s)
+	return r
+}
+
+// FastCall9D3 calls a C function with 9 integer args and 3 doubles.
+// Float args must be pre-converted via math.Float32bits or math.Float64bits.
+func FastCall9D3(cfn, a1, a2, a3, a4, a5, a6, a7, a8, a9, f1, f2, f3 uintptr) uintptr {
+	s := thePool.Get().(*syscall15Args)
+	s.fn = cfn
+	s.a1, s.a2, s.a3, s.a4, s.a5, s.a6, s.a7, s.a8 = a1, a2, a3, a4, a5, a6, a7, a8
+	s.a9 = a9
+	s.a10, s.a11, s.a12, s.a13, s.a14, s.a15 = 0, 0, 0, 0, 0, 0
+	s.f1, s.f2, s.f3, s.f4, s.f5, s.f6, s.f7, s.f8 = f1, f2, f3, 0, 0, 0, 0, 0
+	s.arm64_r8 = 0
+	runtime_cgocall(syscall15XABI0, unsafe.Pointer(s))
+	r := s.a1
+	thePool.Put(s)
+	return r
+}
+
+// FastCall10D3 calls a C function with 10 integer args and 3 doubles.
+// Float args must be pre-converted via math.Float32bits or math.Float64bits.
+func FastCall10D3(cfn, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, f1, f2, f3 uintptr) uintptr {
+	s := thePool.Get().(*syscall15Args)
+	s.fn = cfn
+	s.a1, s.a2, s.a3, s.a4, s.a5, s.a6, s.a7, s.a8 = a1, a2, a3, a4, a5, a6, a7, a8
+	s.a9, s.a10 = a9, a10
+	s.a11, s.a12, s.a13, s.a14, s.a15 = 0, 0, 0, 0, 0
+	s.f1, s.f2, s.f3, s.f4, s.f5, s.f6, s.f7, s.f8 = f1, f2, f3, 0, 0, 0, 0, 0
+	s.arm64_r8 = 0
+	runtime_cgocall(syscall15XABI0, unsafe.Pointer(s))
+	r := s.a1
+	thePool.Put(s)
+	return r
+}
+
+// FastCall11D3 calls a C function with 11 integer args and 3 doubles.
+// Float args must be pre-converted via math.Float32bits or math.Float64bits.
+func FastCall11D3(cfn, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, f1, f2, f3 uintptr) uintptr {
+	s := thePool.Get().(*syscall15Args)
+	s.fn = cfn
+	s.a1, s.a2, s.a3, s.a4, s.a5, s.a6, s.a7, s.a8 = a1, a2, a3, a4, a5, a6, a7, a8
+	s.a9, s.a10, s.a11 = a9, a10, a11
+	s.a12, s.a13, s.a14, s.a15 = 0, 0, 0, 0
+	s.f1, s.f2, s.f3, s.f4, s.f5, s.f6, s.f7, s.f8 = f1, f2, f3, 0, 0, 0, 0, 0
+	s.arm64_r8 = 0
+	runtime_cgocall(syscall15XABI0, unsafe.Pointer(s))
+	r := s.a1
+	thePool.Put(s)
+	return r
+}
+
+// FastCall12D3 calls a C function with 12 integer args and 3 doubles.
+// Float args must be pre-converted via math.Float32bits or math.Float64bits.
+func FastCall12D3(cfn, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, f1, f2, f3 uintptr) uintptr {
+	s := thePool.Get().(*syscall15Args)
+	s.fn = cfn
+	s.a1, s.a2, s.a3, s.a4, s.a5, s.a6, s.a7, s.a8 = a1, a2, a3, a4, a5, a6, a7, a8
+	s.a9, s.a10, s.a11, s.a12 = a9, a10, a11, a12
+	s.a13, s.a14, s.a15 = 0, 0, 0
+	s.f1, s.f2, s.f3, s.f4, s.f5, s.f6, s.f7, s.f8 = f1, f2, f3, 0, 0, 0, 0, 0
+	s.arm64_r8 = 0
+	runtime_cgocall(syscall15XABI0, unsafe.Pointer(s))
+	r := s.a1
+	thePool.Put(s)
+	return r
+}
+
 // registerFastFuncFloatN handles functions with interleaved or multiple float args.
 // Falls back to reflect.MakeFunc since the combinatorial explosion of
 // concrete closures is not worth the code size.
@@ -3380,6 +4409,21 @@ func tryRegisterFastPath(fn reflect.Value, cfn uintptr, ty reflect.Type) bool {
 	if numFloats == 1 && !trailingFloats && ty.In(floatPos).Kind() == reflect.Float32 {
 		registerFastFuncInterleavedFloat32x1(fn, cfn, numIn, floatPos, hasReturn)
 		return true
+	}
+
+	// TrailingFloat64x3: 3 trailing 64-bit floats
+	if numFloats == 3 && trailingFloats {
+		allMatch := true
+		for i := numInts; i < numIn; i++ {
+			if ty.In(i).Kind() != reflect.Float64 {
+				allMatch = false
+				break
+			}
+		}
+		if allMatch {
+			registerFastFuncTrailingFloat64x3(fn, cfn, numInts, hasReturn)
+			return true
+		}
 	}
 
 	// Fallback: MakeFunc for unmatched float patterns
