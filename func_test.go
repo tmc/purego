@@ -323,6 +323,75 @@ func TestRegisterFunc_FastPathBoolReturn(t *testing.T) {
 	}
 }
 
+func TestRegisterFunc_FastPathTrailingFloat64x2(t *testing.T) {
+	if runtime.GOOS == "windows" || (runtime.GOARCH != "amd64" && runtime.GOARCH != "arm64") {
+		t.Skip("fast path only enabled on non-Windows amd64 and arm64")
+	}
+
+	lib := openBenchmarkLibrary(t)
+	sym := openBenchmarkSymbol(t, lib, "trailing_2d_c")
+
+	var fn func(int64, int64, float64, float64) int64
+	purego.RegisterFunc(&fn, sym)
+
+	// (10 + 20) + 1.5 + 2.5 = 34
+	if got, want := fn(10, 20, 1.5, 2.5), int64(34); got != want {
+		t.Fatalf("got %d, want %d", got, want)
+	}
+	allocs := testing.AllocsPerRun(1000, func() {
+		fn(10, 20, 1.5, 2.5)
+	})
+	if allocs != 0 {
+		t.Fatalf("allocs per run = %v, want 0", allocs)
+	}
+}
+
+func TestRegisterFunc_FastPathTrailingFloat32x2(t *testing.T) {
+	if runtime.GOOS == "windows" || (runtime.GOARCH != "amd64" && runtime.GOARCH != "arm64") {
+		t.Skip("fast path only enabled on non-Windows amd64 and arm64")
+	}
+
+	lib := openBenchmarkLibrary(t)
+	sym := openBenchmarkSymbol(t, lib, "trailing_2f_c")
+
+	var fn func(int64, int64, float32, float32) int64
+	purego.RegisterFunc(&fn, sym)
+
+	// (10 + 20) + 1.0 + 2.0 = 33
+	if got, want := fn(10, 20, 1.0, 2.0), int64(33); got != want {
+		t.Fatalf("got %d, want %d", got, want)
+	}
+	allocs := testing.AllocsPerRun(1000, func() {
+		fn(10, 20, 1.0, 2.0)
+	})
+	if allocs != 0 {
+		t.Fatalf("allocs per run = %v, want 0", allocs)
+	}
+}
+
+func TestRegisterFunc_FastPathInterleavedFloat64x1(t *testing.T) {
+	if runtime.GOOS == "windows" || (runtime.GOARCH != "amd64" && runtime.GOARCH != "arm64") {
+		t.Skip("fast path only enabled on non-Windows amd64 and arm64")
+	}
+
+	lib := openBenchmarkLibrary(t)
+	sym := openBenchmarkSymbol(t, lib, "interleaved_id_c")
+
+	var fn func(int64, float64, int64, int64) int64
+	purego.RegisterFunc(&fn, sym)
+
+	// (1 + 3 + 4) * 2.0 = 16
+	if got, want := fn(1, 2.0, 3, 4), int64(16); got != want {
+		t.Fatalf("got %d, want %d", got, want)
+	}
+	allocs := testing.AllocsPerRun(1000, func() {
+		fn(1, 2.0, 3, 4)
+	})
+	if allocs != 0 {
+		t.Fatalf("allocs per run = %v, want 0", allocs)
+	}
+}
+
 func TestABI(t *testing.T) {
 	if runtime.GOOS == "windows" && runtime.GOARCH == "386" {
 		t.Skip("need a 32bit gcc to run this test") // TODO: find 32bit gcc for test

@@ -69,6 +69,21 @@ int64_t interleaved_3_f0_c(float w, int64_t a, int64_t b) {
   return (int64_t)((double)(a + b) * (double)w);
 }
 
+// trailing float64x2: N ints + 2 trailing doubles (CGPoint/CGSize pattern)
+int64_t trailing_2d_c(int64_t a1, int64_t a2, double x, double y) {
+  return (int64_t)((double)(a1 + a2) + x + y);
+}
+
+// trailing float32x2: N ints + 2 trailing floats (Metal vertex pattern)
+int64_t trailing_2f_c(int64_t a1, int64_t a2, float x, float y) {
+  return (int64_t)((double)(a1 + a2) + (double)x + (double)y);
+}
+
+// interleaved float64: int, double, int, int -> weighted sum
+int64_t interleaved_id_c(int64_t a, double w, int64_t b, int64_t c) {
+  return (int64_t)((double)(a + b + c) * w);
+}
+
 // 13 args with struct-packed int32+bool pairs.
 // OptionalInt is {int32_t, _Bool} packed into 8 bytes.
 // We accept it as two int64_t per OptionalInt to match how Go sees them after flattening.
