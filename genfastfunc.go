@@ -43,7 +43,10 @@ var defaultConfig = fastPathConfig{
 		{Name: "IntOnly", MaxInts: -1, NumFloats: 0},
 		{Name: "TrailingFloat32x1", MaxInts: -1, NumFloats: 1, FloatBits: 32, Layout: "trailing"},
 		{Name: "TrailingFloat64x1", MaxInts: -1, NumFloats: 1, FloatBits: 64, Layout: "trailing"},
+		{Name: "TrailingFloat32x2", MaxInts: -1, NumFloats: 2, FloatBits: 32, Layout: "trailing"},
+		{Name: "TrailingFloat64x2", MaxInts: -1, NumFloats: 2, FloatBits: 64, Layout: "trailing"},
 		{Name: "InterleavedFloat32x1", MinInts: 1, MaxInts: -1, NumFloats: 1, FloatBits: 32, Layout: "interleaved"},
+		{Name: "InterleavedFloat64x1", MinInts: 1, MaxInts: -1, NumFloats: 1, FloatBits: 64, Layout: "interleaved"},
 	},
 }
 
@@ -133,12 +136,16 @@ func floatParamList(n int, bits int) string {
 	return strings.Join(parts, ", ") + " " + ty
 }
 
-func interleavedParams(totalArgs, floatPos int) string {
+func interleavedParams(totalArgs, floatPos, floatBits int) string {
+	typeName := "float32"
+	if floatBits == 64 {
+		typeName = "float64"
+	}
 	var parts []string
 	intIdx := 1
 	for i := range totalArgs {
 		if i == floatPos {
-			parts = append(parts, "f1 float32")
+			parts = append(parts, "f1 "+typeName)
 		} else {
 			parts = append(parts, fmt.Sprintf("a%d uintptr", intIdx))
 			intIdx++
@@ -367,6 +374,8 @@ func emitPatternClosures(buf *bytes.Buffer, cfg fastPathConfig) {
 			emitTrailingFloatNClosures(buf, cfg, p)
 		case p.Layout == "interleaved" && p.NumFloats == 1 && p.FloatBits == 32:
 			emitInterleavedFloat32x1Closures(buf, cfg, p)
+		case p.Layout == "interleaved" && p.NumFloats == 1 && p.FloatBits == 64:
+			emitInterleavedFloat64x1Closures(buf, cfg, p)
 		}
 	}
 }
@@ -622,7 +631,7 @@ func emitInterleavedFloat32x1Closures(buf *bytes.Buffer, cfg fastPathConfig, p f
 			numInts := totalArgs - 1
 			cases = append(cases, interleavedCaseData{
 				FloatPos: floatPos,
-				Params:   interleavedParams(totalArgs, floatPos),
+				Params:   interleavedParams(totalArgs, floatPos, 32),
 				IntsInit: fmt.Sprintf("ints := [%d]uintptr{%s}", cfg.MaxIntArgs, interleavedIntArgs(totalArgs)),
 				NumInts:  numInts,
 			})
@@ -630,6 +639,60 @@ func emitInterleavedFloat32x1Closures(buf *bytes.Buffer, cfg fastPathConfig, p f
 		groups = append(groups, interleavedTotalData{TotalArgs: totalArgs, Cases: cases})
 	}
 	execTemplate(buf, "interleavedFloat32x1", tmplInterleavedFloat32x1, groups)
+}
+
+var tmplInterleavedFloat64x1 = `// registerFastFuncInterleavedFloat64x1 sets fn to a zero-allocation closure
+// for functions with totalArgs parameters where exactly one is float64 at
+// position floatPos (not the last position — trailing floats are handled by
+// registerFastFuncFloat64x1).
+func registerFastFuncInterleavedFloat64x1(fn reflect.Value, cfn uintptr, totalArgs, floatPos int, hasReturn bool) {
+	switch totalArgs {
+{{- range .}}
+	case {{.TotalArgs}}:
+		switch floatPos {
+{{- range .Cases}}
+		case {{.FloatPos}}:
+			if hasReturn {
+				impl := func({{.Params}}) uintptr {
+					{{.IntsInit}}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					return fastCallIF(cfn, ints, {{.NumInts}}, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			} else {
+				impl := func({{.Params}}) {
+					{{.IntsInit}}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					fastCallIF(cfn, ints, {{.NumInts}}, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			}
+{{- end}}
+		}
+{{- end}}
+	}
+}
+
+`
+
+func emitInterleavedFloat64x1Closures(buf *bytes.Buffer, cfg fastPathConfig, p fastPattern) {
+	var groups []interleavedTotalData
+	for totalArgs := 2; totalArgs <= p.MaxInts+1; totalArgs++ {
+		var cases []interleavedCaseData
+		for floatPos := 0; floatPos <= totalArgs-2; floatPos++ {
+			numInts := totalArgs - 1
+			cases = append(cases, interleavedCaseData{
+				FloatPos: floatPos,
+				Params:   interleavedParams(totalArgs, floatPos, 64),
+				IntsInit: fmt.Sprintf("ints := [%d]uintptr{%s}", cfg.MaxIntArgs, interleavedIntArgs(totalArgs)),
+				NumInts:  numInts,
+			})
+		}
+		groups = append(groups, interleavedTotalData{TotalArgs: totalArgs, Cases: cases})
+	}
+	execTemplate(buf, "interleavedFloat64x1", tmplInterleavedFloat64x1, groups)
 }
 
 var tmplFloatNFallback = `// registerFastFuncFloatN handles functions with interleaved or multiple float args.
@@ -735,6 +798,15 @@ func emitTryRegisterFastPath(buf *bytes.Buffer, cfg fastPathConfig) {
 			buf.WriteString(`	// Interleaved float32x1
 	if numFloats == 1 && !trailingFloats && ty.In(floatPos).Kind() == reflect.Float32 {
 		registerFastFuncInterleavedFloat32x1(fn, cfn, numIn, floatPos, hasReturn)
+		return true
+	}
+
+`)
+
+		case p.Layout == "interleaved" && p.NumFloats == 1 && p.FloatBits == 64:
+			buf.WriteString(`	// Interleaved float64x1
+	if numFloats == 1 && !trailingFloats && ty.In(floatPos).Kind() == reflect.Float64 {
+		registerFastFuncInterleavedFloat64x1(fn, cfn, numIn, floatPos, hasReturn)
 		return true
 	}
 

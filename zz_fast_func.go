@@ -1005,6 +1005,578 @@ func registerFastFuncFloat64x1(fn reflect.Value, cfn uintptr, numInts int, hasRe
 	}
 }
 
+// registerFastFuncTrailingFloat32x2 handles N int args + 2 trailing float32.
+func registerFastFuncTrailingFloat32x2(fn reflect.Value, cfn uintptr, numInts int, hasReturn bool) {
+	switch numInts {
+	case 0:
+		if hasReturn {
+			impl := func(f1, f2 float32) uintptr {
+				var ints [15]uintptr
+				var floats [8]uintptr
+				floats[0] = uintptr(math.Float32bits(f1))
+				floats[1] = uintptr(math.Float32bits(f2))
+				return fastCallIF(cfn, ints, 0, floats, 2)
+			}
+			forceFuncPtr(fn, &impl)
+		} else {
+			impl := func(f1, f2 float32) {
+				var ints [15]uintptr
+				var floats [8]uintptr
+				floats[0] = uintptr(math.Float32bits(f1))
+				floats[1] = uintptr(math.Float32bits(f2))
+				fastCallIF(cfn, ints, 0, floats, 2)
+			}
+			forceFuncPtr(fn, &impl)
+		}
+	case 1:
+		if hasReturn {
+			impl := func(a1 uintptr, f1, f2 float32) uintptr {
+				ints := [15]uintptr{a1}
+				var floats [8]uintptr
+				floats[0] = uintptr(math.Float32bits(f1))
+				floats[1] = uintptr(math.Float32bits(f2))
+				return fastCallIF(cfn, ints, 1, floats, 2)
+			}
+			forceFuncPtr(fn, &impl)
+		} else {
+			impl := func(a1 uintptr, f1, f2 float32) {
+				ints := [15]uintptr{a1}
+				var floats [8]uintptr
+				floats[0] = uintptr(math.Float32bits(f1))
+				floats[1] = uintptr(math.Float32bits(f2))
+				fastCallIF(cfn, ints, 1, floats, 2)
+			}
+			forceFuncPtr(fn, &impl)
+		}
+	case 2:
+		if hasReturn {
+			impl := func(a1, a2 uintptr, f1, f2 float32) uintptr {
+				ints := [15]uintptr{a1, a2}
+				var floats [8]uintptr
+				floats[0] = uintptr(math.Float32bits(f1))
+				floats[1] = uintptr(math.Float32bits(f2))
+				return fastCallIF(cfn, ints, 2, floats, 2)
+			}
+			forceFuncPtr(fn, &impl)
+		} else {
+			impl := func(a1, a2 uintptr, f1, f2 float32) {
+				ints := [15]uintptr{a1, a2}
+				var floats [8]uintptr
+				floats[0] = uintptr(math.Float32bits(f1))
+				floats[1] = uintptr(math.Float32bits(f2))
+				fastCallIF(cfn, ints, 2, floats, 2)
+			}
+			forceFuncPtr(fn, &impl)
+		}
+	case 3:
+		if hasReturn {
+			impl := func(a1, a2, a3 uintptr, f1, f2 float32) uintptr {
+				ints := [15]uintptr{a1, a2, a3}
+				var floats [8]uintptr
+				floats[0] = uintptr(math.Float32bits(f1))
+				floats[1] = uintptr(math.Float32bits(f2))
+				return fastCallIF(cfn, ints, 3, floats, 2)
+			}
+			forceFuncPtr(fn, &impl)
+		} else {
+			impl := func(a1, a2, a3 uintptr, f1, f2 float32) {
+				ints := [15]uintptr{a1, a2, a3}
+				var floats [8]uintptr
+				floats[0] = uintptr(math.Float32bits(f1))
+				floats[1] = uintptr(math.Float32bits(f2))
+				fastCallIF(cfn, ints, 3, floats, 2)
+			}
+			forceFuncPtr(fn, &impl)
+		}
+	case 4:
+		if hasReturn {
+			impl := func(a1, a2, a3, a4 uintptr, f1, f2 float32) uintptr {
+				ints := [15]uintptr{a1, a2, a3, a4}
+				var floats [8]uintptr
+				floats[0] = uintptr(math.Float32bits(f1))
+				floats[1] = uintptr(math.Float32bits(f2))
+				return fastCallIF(cfn, ints, 4, floats, 2)
+			}
+			forceFuncPtr(fn, &impl)
+		} else {
+			impl := func(a1, a2, a3, a4 uintptr, f1, f2 float32) {
+				ints := [15]uintptr{a1, a2, a3, a4}
+				var floats [8]uintptr
+				floats[0] = uintptr(math.Float32bits(f1))
+				floats[1] = uintptr(math.Float32bits(f2))
+				fastCallIF(cfn, ints, 4, floats, 2)
+			}
+			forceFuncPtr(fn, &impl)
+		}
+	case 5:
+		if hasReturn {
+			impl := func(a1, a2, a3, a4, a5 uintptr, f1, f2 float32) uintptr {
+				ints := [15]uintptr{a1, a2, a3, a4, a5}
+				var floats [8]uintptr
+				floats[0] = uintptr(math.Float32bits(f1))
+				floats[1] = uintptr(math.Float32bits(f2))
+				return fastCallIF(cfn, ints, 5, floats, 2)
+			}
+			forceFuncPtr(fn, &impl)
+		} else {
+			impl := func(a1, a2, a3, a4, a5 uintptr, f1, f2 float32) {
+				ints := [15]uintptr{a1, a2, a3, a4, a5}
+				var floats [8]uintptr
+				floats[0] = uintptr(math.Float32bits(f1))
+				floats[1] = uintptr(math.Float32bits(f2))
+				fastCallIF(cfn, ints, 5, floats, 2)
+			}
+			forceFuncPtr(fn, &impl)
+		}
+	case 6:
+		if hasReturn {
+			impl := func(a1, a2, a3, a4, a5, a6 uintptr, f1, f2 float32) uintptr {
+				ints := [15]uintptr{a1, a2, a3, a4, a5, a6}
+				var floats [8]uintptr
+				floats[0] = uintptr(math.Float32bits(f1))
+				floats[1] = uintptr(math.Float32bits(f2))
+				return fastCallIF(cfn, ints, 6, floats, 2)
+			}
+			forceFuncPtr(fn, &impl)
+		} else {
+			impl := func(a1, a2, a3, a4, a5, a6 uintptr, f1, f2 float32) {
+				ints := [15]uintptr{a1, a2, a3, a4, a5, a6}
+				var floats [8]uintptr
+				floats[0] = uintptr(math.Float32bits(f1))
+				floats[1] = uintptr(math.Float32bits(f2))
+				fastCallIF(cfn, ints, 6, floats, 2)
+			}
+			forceFuncPtr(fn, &impl)
+		}
+	case 7:
+		if hasReturn {
+			impl := func(a1, a2, a3, a4, a5, a6, a7 uintptr, f1, f2 float32) uintptr {
+				ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7}
+				var floats [8]uintptr
+				floats[0] = uintptr(math.Float32bits(f1))
+				floats[1] = uintptr(math.Float32bits(f2))
+				return fastCallIF(cfn, ints, 7, floats, 2)
+			}
+			forceFuncPtr(fn, &impl)
+		} else {
+			impl := func(a1, a2, a3, a4, a5, a6, a7 uintptr, f1, f2 float32) {
+				ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7}
+				var floats [8]uintptr
+				floats[0] = uintptr(math.Float32bits(f1))
+				floats[1] = uintptr(math.Float32bits(f2))
+				fastCallIF(cfn, ints, 7, floats, 2)
+			}
+			forceFuncPtr(fn, &impl)
+		}
+	case 8:
+		if hasReturn {
+			impl := func(a1, a2, a3, a4, a5, a6, a7, a8 uintptr, f1, f2 float32) uintptr {
+				ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7, a8}
+				var floats [8]uintptr
+				floats[0] = uintptr(math.Float32bits(f1))
+				floats[1] = uintptr(math.Float32bits(f2))
+				return fastCallIF(cfn, ints, 8, floats, 2)
+			}
+			forceFuncPtr(fn, &impl)
+		} else {
+			impl := func(a1, a2, a3, a4, a5, a6, a7, a8 uintptr, f1, f2 float32) {
+				ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7, a8}
+				var floats [8]uintptr
+				floats[0] = uintptr(math.Float32bits(f1))
+				floats[1] = uintptr(math.Float32bits(f2))
+				fastCallIF(cfn, ints, 8, floats, 2)
+			}
+			forceFuncPtr(fn, &impl)
+		}
+	case 9:
+		if hasReturn {
+			impl := func(a1, a2, a3, a4, a5, a6, a7, a8, a9 uintptr, f1, f2 float32) uintptr {
+				ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7, a8, a9}
+				var floats [8]uintptr
+				floats[0] = uintptr(math.Float32bits(f1))
+				floats[1] = uintptr(math.Float32bits(f2))
+				return fastCallIF(cfn, ints, 9, floats, 2)
+			}
+			forceFuncPtr(fn, &impl)
+		} else {
+			impl := func(a1, a2, a3, a4, a5, a6, a7, a8, a9 uintptr, f1, f2 float32) {
+				ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7, a8, a9}
+				var floats [8]uintptr
+				floats[0] = uintptr(math.Float32bits(f1))
+				floats[1] = uintptr(math.Float32bits(f2))
+				fastCallIF(cfn, ints, 9, floats, 2)
+			}
+			forceFuncPtr(fn, &impl)
+		}
+	case 10:
+		if hasReturn {
+			impl := func(a1, a2, a3, a4, a5, a6, a7, a8, a9, a10 uintptr, f1, f2 float32) uintptr {
+				ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7, a8, a9, a10}
+				var floats [8]uintptr
+				floats[0] = uintptr(math.Float32bits(f1))
+				floats[1] = uintptr(math.Float32bits(f2))
+				return fastCallIF(cfn, ints, 10, floats, 2)
+			}
+			forceFuncPtr(fn, &impl)
+		} else {
+			impl := func(a1, a2, a3, a4, a5, a6, a7, a8, a9, a10 uintptr, f1, f2 float32) {
+				ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7, a8, a9, a10}
+				var floats [8]uintptr
+				floats[0] = uintptr(math.Float32bits(f1))
+				floats[1] = uintptr(math.Float32bits(f2))
+				fastCallIF(cfn, ints, 10, floats, 2)
+			}
+			forceFuncPtr(fn, &impl)
+		}
+	case 11:
+		if hasReturn {
+			impl := func(a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11 uintptr, f1, f2 float32) uintptr {
+				ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11}
+				var floats [8]uintptr
+				floats[0] = uintptr(math.Float32bits(f1))
+				floats[1] = uintptr(math.Float32bits(f2))
+				return fastCallIF(cfn, ints, 11, floats, 2)
+			}
+			forceFuncPtr(fn, &impl)
+		} else {
+			impl := func(a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11 uintptr, f1, f2 float32) {
+				ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11}
+				var floats [8]uintptr
+				floats[0] = uintptr(math.Float32bits(f1))
+				floats[1] = uintptr(math.Float32bits(f2))
+				fastCallIF(cfn, ints, 11, floats, 2)
+			}
+			forceFuncPtr(fn, &impl)
+		}
+	case 12:
+		if hasReturn {
+			impl := func(a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12 uintptr, f1, f2 float32) uintptr {
+				ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12}
+				var floats [8]uintptr
+				floats[0] = uintptr(math.Float32bits(f1))
+				floats[1] = uintptr(math.Float32bits(f2))
+				return fastCallIF(cfn, ints, 12, floats, 2)
+			}
+			forceFuncPtr(fn, &impl)
+		} else {
+			impl := func(a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12 uintptr, f1, f2 float32) {
+				ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12}
+				var floats [8]uintptr
+				floats[0] = uintptr(math.Float32bits(f1))
+				floats[1] = uintptr(math.Float32bits(f2))
+				fastCallIF(cfn, ints, 12, floats, 2)
+			}
+			forceFuncPtr(fn, &impl)
+		}
+	case 13:
+		if hasReturn {
+			impl := func(a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13 uintptr, f1, f2 float32) uintptr {
+				ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13}
+				var floats [8]uintptr
+				floats[0] = uintptr(math.Float32bits(f1))
+				floats[1] = uintptr(math.Float32bits(f2))
+				return fastCallIF(cfn, ints, 13, floats, 2)
+			}
+			forceFuncPtr(fn, &impl)
+		} else {
+			impl := func(a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13 uintptr, f1, f2 float32) {
+				ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13}
+				var floats [8]uintptr
+				floats[0] = uintptr(math.Float32bits(f1))
+				floats[1] = uintptr(math.Float32bits(f2))
+				fastCallIF(cfn, ints, 13, floats, 2)
+			}
+			forceFuncPtr(fn, &impl)
+		}
+	}
+}
+
+// registerFastFuncTrailingFloat64x2 handles N int args + 2 trailing float64.
+func registerFastFuncTrailingFloat64x2(fn reflect.Value, cfn uintptr, numInts int, hasReturn bool) {
+	switch numInts {
+	case 0:
+		if hasReturn {
+			impl := func(f1, f2 float64) uintptr {
+				var ints [15]uintptr
+				var floats [8]uintptr
+				floats[0] = uintptr(math.Float64bits(f1))
+				floats[1] = uintptr(math.Float64bits(f2))
+				return fastCallIF(cfn, ints, 0, floats, 2)
+			}
+			forceFuncPtr(fn, &impl)
+		} else {
+			impl := func(f1, f2 float64) {
+				var ints [15]uintptr
+				var floats [8]uintptr
+				floats[0] = uintptr(math.Float64bits(f1))
+				floats[1] = uintptr(math.Float64bits(f2))
+				fastCallIF(cfn, ints, 0, floats, 2)
+			}
+			forceFuncPtr(fn, &impl)
+		}
+	case 1:
+		if hasReturn {
+			impl := func(a1 uintptr, f1, f2 float64) uintptr {
+				ints := [15]uintptr{a1}
+				var floats [8]uintptr
+				floats[0] = uintptr(math.Float64bits(f1))
+				floats[1] = uintptr(math.Float64bits(f2))
+				return fastCallIF(cfn, ints, 1, floats, 2)
+			}
+			forceFuncPtr(fn, &impl)
+		} else {
+			impl := func(a1 uintptr, f1, f2 float64) {
+				ints := [15]uintptr{a1}
+				var floats [8]uintptr
+				floats[0] = uintptr(math.Float64bits(f1))
+				floats[1] = uintptr(math.Float64bits(f2))
+				fastCallIF(cfn, ints, 1, floats, 2)
+			}
+			forceFuncPtr(fn, &impl)
+		}
+	case 2:
+		if hasReturn {
+			impl := func(a1, a2 uintptr, f1, f2 float64) uintptr {
+				ints := [15]uintptr{a1, a2}
+				var floats [8]uintptr
+				floats[0] = uintptr(math.Float64bits(f1))
+				floats[1] = uintptr(math.Float64bits(f2))
+				return fastCallIF(cfn, ints, 2, floats, 2)
+			}
+			forceFuncPtr(fn, &impl)
+		} else {
+			impl := func(a1, a2 uintptr, f1, f2 float64) {
+				ints := [15]uintptr{a1, a2}
+				var floats [8]uintptr
+				floats[0] = uintptr(math.Float64bits(f1))
+				floats[1] = uintptr(math.Float64bits(f2))
+				fastCallIF(cfn, ints, 2, floats, 2)
+			}
+			forceFuncPtr(fn, &impl)
+		}
+	case 3:
+		if hasReturn {
+			impl := func(a1, a2, a3 uintptr, f1, f2 float64) uintptr {
+				ints := [15]uintptr{a1, a2, a3}
+				var floats [8]uintptr
+				floats[0] = uintptr(math.Float64bits(f1))
+				floats[1] = uintptr(math.Float64bits(f2))
+				return fastCallIF(cfn, ints, 3, floats, 2)
+			}
+			forceFuncPtr(fn, &impl)
+		} else {
+			impl := func(a1, a2, a3 uintptr, f1, f2 float64) {
+				ints := [15]uintptr{a1, a2, a3}
+				var floats [8]uintptr
+				floats[0] = uintptr(math.Float64bits(f1))
+				floats[1] = uintptr(math.Float64bits(f2))
+				fastCallIF(cfn, ints, 3, floats, 2)
+			}
+			forceFuncPtr(fn, &impl)
+		}
+	case 4:
+		if hasReturn {
+			impl := func(a1, a2, a3, a4 uintptr, f1, f2 float64) uintptr {
+				ints := [15]uintptr{a1, a2, a3, a4}
+				var floats [8]uintptr
+				floats[0] = uintptr(math.Float64bits(f1))
+				floats[1] = uintptr(math.Float64bits(f2))
+				return fastCallIF(cfn, ints, 4, floats, 2)
+			}
+			forceFuncPtr(fn, &impl)
+		} else {
+			impl := func(a1, a2, a3, a4 uintptr, f1, f2 float64) {
+				ints := [15]uintptr{a1, a2, a3, a4}
+				var floats [8]uintptr
+				floats[0] = uintptr(math.Float64bits(f1))
+				floats[1] = uintptr(math.Float64bits(f2))
+				fastCallIF(cfn, ints, 4, floats, 2)
+			}
+			forceFuncPtr(fn, &impl)
+		}
+	case 5:
+		if hasReturn {
+			impl := func(a1, a2, a3, a4, a5 uintptr, f1, f2 float64) uintptr {
+				ints := [15]uintptr{a1, a2, a3, a4, a5}
+				var floats [8]uintptr
+				floats[0] = uintptr(math.Float64bits(f1))
+				floats[1] = uintptr(math.Float64bits(f2))
+				return fastCallIF(cfn, ints, 5, floats, 2)
+			}
+			forceFuncPtr(fn, &impl)
+		} else {
+			impl := func(a1, a2, a3, a4, a5 uintptr, f1, f2 float64) {
+				ints := [15]uintptr{a1, a2, a3, a4, a5}
+				var floats [8]uintptr
+				floats[0] = uintptr(math.Float64bits(f1))
+				floats[1] = uintptr(math.Float64bits(f2))
+				fastCallIF(cfn, ints, 5, floats, 2)
+			}
+			forceFuncPtr(fn, &impl)
+		}
+	case 6:
+		if hasReturn {
+			impl := func(a1, a2, a3, a4, a5, a6 uintptr, f1, f2 float64) uintptr {
+				ints := [15]uintptr{a1, a2, a3, a4, a5, a6}
+				var floats [8]uintptr
+				floats[0] = uintptr(math.Float64bits(f1))
+				floats[1] = uintptr(math.Float64bits(f2))
+				return fastCallIF(cfn, ints, 6, floats, 2)
+			}
+			forceFuncPtr(fn, &impl)
+		} else {
+			impl := func(a1, a2, a3, a4, a5, a6 uintptr, f1, f2 float64) {
+				ints := [15]uintptr{a1, a2, a3, a4, a5, a6}
+				var floats [8]uintptr
+				floats[0] = uintptr(math.Float64bits(f1))
+				floats[1] = uintptr(math.Float64bits(f2))
+				fastCallIF(cfn, ints, 6, floats, 2)
+			}
+			forceFuncPtr(fn, &impl)
+		}
+	case 7:
+		if hasReturn {
+			impl := func(a1, a2, a3, a4, a5, a6, a7 uintptr, f1, f2 float64) uintptr {
+				ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7}
+				var floats [8]uintptr
+				floats[0] = uintptr(math.Float64bits(f1))
+				floats[1] = uintptr(math.Float64bits(f2))
+				return fastCallIF(cfn, ints, 7, floats, 2)
+			}
+			forceFuncPtr(fn, &impl)
+		} else {
+			impl := func(a1, a2, a3, a4, a5, a6, a7 uintptr, f1, f2 float64) {
+				ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7}
+				var floats [8]uintptr
+				floats[0] = uintptr(math.Float64bits(f1))
+				floats[1] = uintptr(math.Float64bits(f2))
+				fastCallIF(cfn, ints, 7, floats, 2)
+			}
+			forceFuncPtr(fn, &impl)
+		}
+	case 8:
+		if hasReturn {
+			impl := func(a1, a2, a3, a4, a5, a6, a7, a8 uintptr, f1, f2 float64) uintptr {
+				ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7, a8}
+				var floats [8]uintptr
+				floats[0] = uintptr(math.Float64bits(f1))
+				floats[1] = uintptr(math.Float64bits(f2))
+				return fastCallIF(cfn, ints, 8, floats, 2)
+			}
+			forceFuncPtr(fn, &impl)
+		} else {
+			impl := func(a1, a2, a3, a4, a5, a6, a7, a8 uintptr, f1, f2 float64) {
+				ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7, a8}
+				var floats [8]uintptr
+				floats[0] = uintptr(math.Float64bits(f1))
+				floats[1] = uintptr(math.Float64bits(f2))
+				fastCallIF(cfn, ints, 8, floats, 2)
+			}
+			forceFuncPtr(fn, &impl)
+		}
+	case 9:
+		if hasReturn {
+			impl := func(a1, a2, a3, a4, a5, a6, a7, a8, a9 uintptr, f1, f2 float64) uintptr {
+				ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7, a8, a9}
+				var floats [8]uintptr
+				floats[0] = uintptr(math.Float64bits(f1))
+				floats[1] = uintptr(math.Float64bits(f2))
+				return fastCallIF(cfn, ints, 9, floats, 2)
+			}
+			forceFuncPtr(fn, &impl)
+		} else {
+			impl := func(a1, a2, a3, a4, a5, a6, a7, a8, a9 uintptr, f1, f2 float64) {
+				ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7, a8, a9}
+				var floats [8]uintptr
+				floats[0] = uintptr(math.Float64bits(f1))
+				floats[1] = uintptr(math.Float64bits(f2))
+				fastCallIF(cfn, ints, 9, floats, 2)
+			}
+			forceFuncPtr(fn, &impl)
+		}
+	case 10:
+		if hasReturn {
+			impl := func(a1, a2, a3, a4, a5, a6, a7, a8, a9, a10 uintptr, f1, f2 float64) uintptr {
+				ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7, a8, a9, a10}
+				var floats [8]uintptr
+				floats[0] = uintptr(math.Float64bits(f1))
+				floats[1] = uintptr(math.Float64bits(f2))
+				return fastCallIF(cfn, ints, 10, floats, 2)
+			}
+			forceFuncPtr(fn, &impl)
+		} else {
+			impl := func(a1, a2, a3, a4, a5, a6, a7, a8, a9, a10 uintptr, f1, f2 float64) {
+				ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7, a8, a9, a10}
+				var floats [8]uintptr
+				floats[0] = uintptr(math.Float64bits(f1))
+				floats[1] = uintptr(math.Float64bits(f2))
+				fastCallIF(cfn, ints, 10, floats, 2)
+			}
+			forceFuncPtr(fn, &impl)
+		}
+	case 11:
+		if hasReturn {
+			impl := func(a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11 uintptr, f1, f2 float64) uintptr {
+				ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11}
+				var floats [8]uintptr
+				floats[0] = uintptr(math.Float64bits(f1))
+				floats[1] = uintptr(math.Float64bits(f2))
+				return fastCallIF(cfn, ints, 11, floats, 2)
+			}
+			forceFuncPtr(fn, &impl)
+		} else {
+			impl := func(a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11 uintptr, f1, f2 float64) {
+				ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11}
+				var floats [8]uintptr
+				floats[0] = uintptr(math.Float64bits(f1))
+				floats[1] = uintptr(math.Float64bits(f2))
+				fastCallIF(cfn, ints, 11, floats, 2)
+			}
+			forceFuncPtr(fn, &impl)
+		}
+	case 12:
+		if hasReturn {
+			impl := func(a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12 uintptr, f1, f2 float64) uintptr {
+				ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12}
+				var floats [8]uintptr
+				floats[0] = uintptr(math.Float64bits(f1))
+				floats[1] = uintptr(math.Float64bits(f2))
+				return fastCallIF(cfn, ints, 12, floats, 2)
+			}
+			forceFuncPtr(fn, &impl)
+		} else {
+			impl := func(a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12 uintptr, f1, f2 float64) {
+				ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12}
+				var floats [8]uintptr
+				floats[0] = uintptr(math.Float64bits(f1))
+				floats[1] = uintptr(math.Float64bits(f2))
+				fastCallIF(cfn, ints, 12, floats, 2)
+			}
+			forceFuncPtr(fn, &impl)
+		}
+	case 13:
+		if hasReturn {
+			impl := func(a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13 uintptr, f1, f2 float64) uintptr {
+				ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13}
+				var floats [8]uintptr
+				floats[0] = uintptr(math.Float64bits(f1))
+				floats[1] = uintptr(math.Float64bits(f2))
+				return fastCallIF(cfn, ints, 13, floats, 2)
+			}
+			forceFuncPtr(fn, &impl)
+		} else {
+			impl := func(a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13 uintptr, f1, f2 float64) {
+				ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13}
+				var floats [8]uintptr
+				floats[0] = uintptr(math.Float64bits(f1))
+				floats[1] = uintptr(math.Float64bits(f2))
+				fastCallIF(cfn, ints, 13, floats, 2)
+			}
+			forceFuncPtr(fn, &impl)
+		}
+	}
+}
+
 // registerFastFuncInterleavedFloat32x1 sets fn to a zero-allocation closure
 // for functions with totalArgs parameters where exactly one is float32 at
 // position floatPos (not the last position — trailing floats are handled by
@@ -3219,6 +3791,2220 @@ func registerFastFuncInterleavedFloat32x1(fn reflect.Value, cfn uintptr, totalAr
 	}
 }
 
+// registerFastFuncInterleavedFloat64x1 sets fn to a zero-allocation closure
+// for functions with totalArgs parameters where exactly one is float64 at
+// position floatPos (not the last position — trailing floats are handled by
+// registerFastFuncFloat64x1).
+func registerFastFuncInterleavedFloat64x1(fn reflect.Value, cfn uintptr, totalArgs, floatPos int, hasReturn bool) {
+	switch totalArgs {
+	case 2:
+		switch floatPos {
+		case 0:
+			if hasReturn {
+				impl := func(f1 float64, a1 uintptr) uintptr {
+					ints := [15]uintptr{a1}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					return fastCallIF(cfn, ints, 1, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			} else {
+				impl := func(f1 float64, a1 uintptr) {
+					ints := [15]uintptr{a1}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					fastCallIF(cfn, ints, 1, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			}
+		}
+	case 3:
+		switch floatPos {
+		case 0:
+			if hasReturn {
+				impl := func(f1 float64, a1 uintptr, a2 uintptr) uintptr {
+					ints := [15]uintptr{a1, a2}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					return fastCallIF(cfn, ints, 2, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			} else {
+				impl := func(f1 float64, a1 uintptr, a2 uintptr) {
+					ints := [15]uintptr{a1, a2}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					fastCallIF(cfn, ints, 2, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			}
+		case 1:
+			if hasReturn {
+				impl := func(a1 uintptr, f1 float64, a2 uintptr) uintptr {
+					ints := [15]uintptr{a1, a2}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					return fastCallIF(cfn, ints, 2, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			} else {
+				impl := func(a1 uintptr, f1 float64, a2 uintptr) {
+					ints := [15]uintptr{a1, a2}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					fastCallIF(cfn, ints, 2, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			}
+		}
+	case 4:
+		switch floatPos {
+		case 0:
+			if hasReturn {
+				impl := func(f1 float64, a1 uintptr, a2 uintptr, a3 uintptr) uintptr {
+					ints := [15]uintptr{a1, a2, a3}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					return fastCallIF(cfn, ints, 3, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			} else {
+				impl := func(f1 float64, a1 uintptr, a2 uintptr, a3 uintptr) {
+					ints := [15]uintptr{a1, a2, a3}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					fastCallIF(cfn, ints, 3, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			}
+		case 1:
+			if hasReturn {
+				impl := func(a1 uintptr, f1 float64, a2 uintptr, a3 uintptr) uintptr {
+					ints := [15]uintptr{a1, a2, a3}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					return fastCallIF(cfn, ints, 3, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			} else {
+				impl := func(a1 uintptr, f1 float64, a2 uintptr, a3 uintptr) {
+					ints := [15]uintptr{a1, a2, a3}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					fastCallIF(cfn, ints, 3, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			}
+		case 2:
+			if hasReturn {
+				impl := func(a1 uintptr, a2 uintptr, f1 float64, a3 uintptr) uintptr {
+					ints := [15]uintptr{a1, a2, a3}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					return fastCallIF(cfn, ints, 3, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			} else {
+				impl := func(a1 uintptr, a2 uintptr, f1 float64, a3 uintptr) {
+					ints := [15]uintptr{a1, a2, a3}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					fastCallIF(cfn, ints, 3, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			}
+		}
+	case 5:
+		switch floatPos {
+		case 0:
+			if hasReturn {
+				impl := func(f1 float64, a1 uintptr, a2 uintptr, a3 uintptr, a4 uintptr) uintptr {
+					ints := [15]uintptr{a1, a2, a3, a4}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					return fastCallIF(cfn, ints, 4, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			} else {
+				impl := func(f1 float64, a1 uintptr, a2 uintptr, a3 uintptr, a4 uintptr) {
+					ints := [15]uintptr{a1, a2, a3, a4}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					fastCallIF(cfn, ints, 4, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			}
+		case 1:
+			if hasReturn {
+				impl := func(a1 uintptr, f1 float64, a2 uintptr, a3 uintptr, a4 uintptr) uintptr {
+					ints := [15]uintptr{a1, a2, a3, a4}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					return fastCallIF(cfn, ints, 4, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			} else {
+				impl := func(a1 uintptr, f1 float64, a2 uintptr, a3 uintptr, a4 uintptr) {
+					ints := [15]uintptr{a1, a2, a3, a4}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					fastCallIF(cfn, ints, 4, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			}
+		case 2:
+			if hasReturn {
+				impl := func(a1 uintptr, a2 uintptr, f1 float64, a3 uintptr, a4 uintptr) uintptr {
+					ints := [15]uintptr{a1, a2, a3, a4}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					return fastCallIF(cfn, ints, 4, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			} else {
+				impl := func(a1 uintptr, a2 uintptr, f1 float64, a3 uintptr, a4 uintptr) {
+					ints := [15]uintptr{a1, a2, a3, a4}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					fastCallIF(cfn, ints, 4, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			}
+		case 3:
+			if hasReturn {
+				impl := func(a1 uintptr, a2 uintptr, a3 uintptr, f1 float64, a4 uintptr) uintptr {
+					ints := [15]uintptr{a1, a2, a3, a4}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					return fastCallIF(cfn, ints, 4, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			} else {
+				impl := func(a1 uintptr, a2 uintptr, a3 uintptr, f1 float64, a4 uintptr) {
+					ints := [15]uintptr{a1, a2, a3, a4}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					fastCallIF(cfn, ints, 4, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			}
+		}
+	case 6:
+		switch floatPos {
+		case 0:
+			if hasReturn {
+				impl := func(f1 float64, a1 uintptr, a2 uintptr, a3 uintptr, a4 uintptr, a5 uintptr) uintptr {
+					ints := [15]uintptr{a1, a2, a3, a4, a5}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					return fastCallIF(cfn, ints, 5, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			} else {
+				impl := func(f1 float64, a1 uintptr, a2 uintptr, a3 uintptr, a4 uintptr, a5 uintptr) {
+					ints := [15]uintptr{a1, a2, a3, a4, a5}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					fastCallIF(cfn, ints, 5, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			}
+		case 1:
+			if hasReturn {
+				impl := func(a1 uintptr, f1 float64, a2 uintptr, a3 uintptr, a4 uintptr, a5 uintptr) uintptr {
+					ints := [15]uintptr{a1, a2, a3, a4, a5}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					return fastCallIF(cfn, ints, 5, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			} else {
+				impl := func(a1 uintptr, f1 float64, a2 uintptr, a3 uintptr, a4 uintptr, a5 uintptr) {
+					ints := [15]uintptr{a1, a2, a3, a4, a5}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					fastCallIF(cfn, ints, 5, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			}
+		case 2:
+			if hasReturn {
+				impl := func(a1 uintptr, a2 uintptr, f1 float64, a3 uintptr, a4 uintptr, a5 uintptr) uintptr {
+					ints := [15]uintptr{a1, a2, a3, a4, a5}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					return fastCallIF(cfn, ints, 5, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			} else {
+				impl := func(a1 uintptr, a2 uintptr, f1 float64, a3 uintptr, a4 uintptr, a5 uintptr) {
+					ints := [15]uintptr{a1, a2, a3, a4, a5}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					fastCallIF(cfn, ints, 5, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			}
+		case 3:
+			if hasReturn {
+				impl := func(a1 uintptr, a2 uintptr, a3 uintptr, f1 float64, a4 uintptr, a5 uintptr) uintptr {
+					ints := [15]uintptr{a1, a2, a3, a4, a5}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					return fastCallIF(cfn, ints, 5, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			} else {
+				impl := func(a1 uintptr, a2 uintptr, a3 uintptr, f1 float64, a4 uintptr, a5 uintptr) {
+					ints := [15]uintptr{a1, a2, a3, a4, a5}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					fastCallIF(cfn, ints, 5, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			}
+		case 4:
+			if hasReturn {
+				impl := func(a1 uintptr, a2 uintptr, a3 uintptr, a4 uintptr, f1 float64, a5 uintptr) uintptr {
+					ints := [15]uintptr{a1, a2, a3, a4, a5}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					return fastCallIF(cfn, ints, 5, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			} else {
+				impl := func(a1 uintptr, a2 uintptr, a3 uintptr, a4 uintptr, f1 float64, a5 uintptr) {
+					ints := [15]uintptr{a1, a2, a3, a4, a5}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					fastCallIF(cfn, ints, 5, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			}
+		}
+	case 7:
+		switch floatPos {
+		case 0:
+			if hasReturn {
+				impl := func(f1 float64, a1 uintptr, a2 uintptr, a3 uintptr, a4 uintptr, a5 uintptr, a6 uintptr) uintptr {
+					ints := [15]uintptr{a1, a2, a3, a4, a5, a6}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					return fastCallIF(cfn, ints, 6, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			} else {
+				impl := func(f1 float64, a1 uintptr, a2 uintptr, a3 uintptr, a4 uintptr, a5 uintptr, a6 uintptr) {
+					ints := [15]uintptr{a1, a2, a3, a4, a5, a6}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					fastCallIF(cfn, ints, 6, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			}
+		case 1:
+			if hasReturn {
+				impl := func(a1 uintptr, f1 float64, a2 uintptr, a3 uintptr, a4 uintptr, a5 uintptr, a6 uintptr) uintptr {
+					ints := [15]uintptr{a1, a2, a3, a4, a5, a6}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					return fastCallIF(cfn, ints, 6, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			} else {
+				impl := func(a1 uintptr, f1 float64, a2 uintptr, a3 uintptr, a4 uintptr, a5 uintptr, a6 uintptr) {
+					ints := [15]uintptr{a1, a2, a3, a4, a5, a6}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					fastCallIF(cfn, ints, 6, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			}
+		case 2:
+			if hasReturn {
+				impl := func(a1 uintptr, a2 uintptr, f1 float64, a3 uintptr, a4 uintptr, a5 uintptr, a6 uintptr) uintptr {
+					ints := [15]uintptr{a1, a2, a3, a4, a5, a6}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					return fastCallIF(cfn, ints, 6, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			} else {
+				impl := func(a1 uintptr, a2 uintptr, f1 float64, a3 uintptr, a4 uintptr, a5 uintptr, a6 uintptr) {
+					ints := [15]uintptr{a1, a2, a3, a4, a5, a6}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					fastCallIF(cfn, ints, 6, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			}
+		case 3:
+			if hasReturn {
+				impl := func(a1 uintptr, a2 uintptr, a3 uintptr, f1 float64, a4 uintptr, a5 uintptr, a6 uintptr) uintptr {
+					ints := [15]uintptr{a1, a2, a3, a4, a5, a6}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					return fastCallIF(cfn, ints, 6, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			} else {
+				impl := func(a1 uintptr, a2 uintptr, a3 uintptr, f1 float64, a4 uintptr, a5 uintptr, a6 uintptr) {
+					ints := [15]uintptr{a1, a2, a3, a4, a5, a6}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					fastCallIF(cfn, ints, 6, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			}
+		case 4:
+			if hasReturn {
+				impl := func(a1 uintptr, a2 uintptr, a3 uintptr, a4 uintptr, f1 float64, a5 uintptr, a6 uintptr) uintptr {
+					ints := [15]uintptr{a1, a2, a3, a4, a5, a6}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					return fastCallIF(cfn, ints, 6, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			} else {
+				impl := func(a1 uintptr, a2 uintptr, a3 uintptr, a4 uintptr, f1 float64, a5 uintptr, a6 uintptr) {
+					ints := [15]uintptr{a1, a2, a3, a4, a5, a6}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					fastCallIF(cfn, ints, 6, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			}
+		case 5:
+			if hasReturn {
+				impl := func(a1 uintptr, a2 uintptr, a3 uintptr, a4 uintptr, a5 uintptr, f1 float64, a6 uintptr) uintptr {
+					ints := [15]uintptr{a1, a2, a3, a4, a5, a6}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					return fastCallIF(cfn, ints, 6, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			} else {
+				impl := func(a1 uintptr, a2 uintptr, a3 uintptr, a4 uintptr, a5 uintptr, f1 float64, a6 uintptr) {
+					ints := [15]uintptr{a1, a2, a3, a4, a5, a6}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					fastCallIF(cfn, ints, 6, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			}
+		}
+	case 8:
+		switch floatPos {
+		case 0:
+			if hasReturn {
+				impl := func(f1 float64, a1 uintptr, a2 uintptr, a3 uintptr, a4 uintptr, a5 uintptr, a6 uintptr, a7 uintptr) uintptr {
+					ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					return fastCallIF(cfn, ints, 7, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			} else {
+				impl := func(f1 float64, a1 uintptr, a2 uintptr, a3 uintptr, a4 uintptr, a5 uintptr, a6 uintptr, a7 uintptr) {
+					ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					fastCallIF(cfn, ints, 7, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			}
+		case 1:
+			if hasReturn {
+				impl := func(a1 uintptr, f1 float64, a2 uintptr, a3 uintptr, a4 uintptr, a5 uintptr, a6 uintptr, a7 uintptr) uintptr {
+					ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					return fastCallIF(cfn, ints, 7, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			} else {
+				impl := func(a1 uintptr, f1 float64, a2 uintptr, a3 uintptr, a4 uintptr, a5 uintptr, a6 uintptr, a7 uintptr) {
+					ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					fastCallIF(cfn, ints, 7, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			}
+		case 2:
+			if hasReturn {
+				impl := func(a1 uintptr, a2 uintptr, f1 float64, a3 uintptr, a4 uintptr, a5 uintptr, a6 uintptr, a7 uintptr) uintptr {
+					ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					return fastCallIF(cfn, ints, 7, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			} else {
+				impl := func(a1 uintptr, a2 uintptr, f1 float64, a3 uintptr, a4 uintptr, a5 uintptr, a6 uintptr, a7 uintptr) {
+					ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					fastCallIF(cfn, ints, 7, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			}
+		case 3:
+			if hasReturn {
+				impl := func(a1 uintptr, a2 uintptr, a3 uintptr, f1 float64, a4 uintptr, a5 uintptr, a6 uintptr, a7 uintptr) uintptr {
+					ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					return fastCallIF(cfn, ints, 7, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			} else {
+				impl := func(a1 uintptr, a2 uintptr, a3 uintptr, f1 float64, a4 uintptr, a5 uintptr, a6 uintptr, a7 uintptr) {
+					ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					fastCallIF(cfn, ints, 7, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			}
+		case 4:
+			if hasReturn {
+				impl := func(a1 uintptr, a2 uintptr, a3 uintptr, a4 uintptr, f1 float64, a5 uintptr, a6 uintptr, a7 uintptr) uintptr {
+					ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					return fastCallIF(cfn, ints, 7, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			} else {
+				impl := func(a1 uintptr, a2 uintptr, a3 uintptr, a4 uintptr, f1 float64, a5 uintptr, a6 uintptr, a7 uintptr) {
+					ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					fastCallIF(cfn, ints, 7, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			}
+		case 5:
+			if hasReturn {
+				impl := func(a1 uintptr, a2 uintptr, a3 uintptr, a4 uintptr, a5 uintptr, f1 float64, a6 uintptr, a7 uintptr) uintptr {
+					ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					return fastCallIF(cfn, ints, 7, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			} else {
+				impl := func(a1 uintptr, a2 uintptr, a3 uintptr, a4 uintptr, a5 uintptr, f1 float64, a6 uintptr, a7 uintptr) {
+					ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					fastCallIF(cfn, ints, 7, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			}
+		case 6:
+			if hasReturn {
+				impl := func(a1 uintptr, a2 uintptr, a3 uintptr, a4 uintptr, a5 uintptr, a6 uintptr, f1 float64, a7 uintptr) uintptr {
+					ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					return fastCallIF(cfn, ints, 7, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			} else {
+				impl := func(a1 uintptr, a2 uintptr, a3 uintptr, a4 uintptr, a5 uintptr, a6 uintptr, f1 float64, a7 uintptr) {
+					ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					fastCallIF(cfn, ints, 7, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			}
+		}
+	case 9:
+		switch floatPos {
+		case 0:
+			if hasReturn {
+				impl := func(f1 float64, a1 uintptr, a2 uintptr, a3 uintptr, a4 uintptr, a5 uintptr, a6 uintptr, a7 uintptr, a8 uintptr) uintptr {
+					ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7, a8}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					return fastCallIF(cfn, ints, 8, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			} else {
+				impl := func(f1 float64, a1 uintptr, a2 uintptr, a3 uintptr, a4 uintptr, a5 uintptr, a6 uintptr, a7 uintptr, a8 uintptr) {
+					ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7, a8}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					fastCallIF(cfn, ints, 8, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			}
+		case 1:
+			if hasReturn {
+				impl := func(a1 uintptr, f1 float64, a2 uintptr, a3 uintptr, a4 uintptr, a5 uintptr, a6 uintptr, a7 uintptr, a8 uintptr) uintptr {
+					ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7, a8}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					return fastCallIF(cfn, ints, 8, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			} else {
+				impl := func(a1 uintptr, f1 float64, a2 uintptr, a3 uintptr, a4 uintptr, a5 uintptr, a6 uintptr, a7 uintptr, a8 uintptr) {
+					ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7, a8}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					fastCallIF(cfn, ints, 8, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			}
+		case 2:
+			if hasReturn {
+				impl := func(a1 uintptr, a2 uintptr, f1 float64, a3 uintptr, a4 uintptr, a5 uintptr, a6 uintptr, a7 uintptr, a8 uintptr) uintptr {
+					ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7, a8}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					return fastCallIF(cfn, ints, 8, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			} else {
+				impl := func(a1 uintptr, a2 uintptr, f1 float64, a3 uintptr, a4 uintptr, a5 uintptr, a6 uintptr, a7 uintptr, a8 uintptr) {
+					ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7, a8}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					fastCallIF(cfn, ints, 8, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			}
+		case 3:
+			if hasReturn {
+				impl := func(a1 uintptr, a2 uintptr, a3 uintptr, f1 float64, a4 uintptr, a5 uintptr, a6 uintptr, a7 uintptr, a8 uintptr) uintptr {
+					ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7, a8}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					return fastCallIF(cfn, ints, 8, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			} else {
+				impl := func(a1 uintptr, a2 uintptr, a3 uintptr, f1 float64, a4 uintptr, a5 uintptr, a6 uintptr, a7 uintptr, a8 uintptr) {
+					ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7, a8}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					fastCallIF(cfn, ints, 8, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			}
+		case 4:
+			if hasReturn {
+				impl := func(a1 uintptr, a2 uintptr, a3 uintptr, a4 uintptr, f1 float64, a5 uintptr, a6 uintptr, a7 uintptr, a8 uintptr) uintptr {
+					ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7, a8}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					return fastCallIF(cfn, ints, 8, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			} else {
+				impl := func(a1 uintptr, a2 uintptr, a3 uintptr, a4 uintptr, f1 float64, a5 uintptr, a6 uintptr, a7 uintptr, a8 uintptr) {
+					ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7, a8}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					fastCallIF(cfn, ints, 8, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			}
+		case 5:
+			if hasReturn {
+				impl := func(a1 uintptr, a2 uintptr, a3 uintptr, a4 uintptr, a5 uintptr, f1 float64, a6 uintptr, a7 uintptr, a8 uintptr) uintptr {
+					ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7, a8}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					return fastCallIF(cfn, ints, 8, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			} else {
+				impl := func(a1 uintptr, a2 uintptr, a3 uintptr, a4 uintptr, a5 uintptr, f1 float64, a6 uintptr, a7 uintptr, a8 uintptr) {
+					ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7, a8}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					fastCallIF(cfn, ints, 8, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			}
+		case 6:
+			if hasReturn {
+				impl := func(a1 uintptr, a2 uintptr, a3 uintptr, a4 uintptr, a5 uintptr, a6 uintptr, f1 float64, a7 uintptr, a8 uintptr) uintptr {
+					ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7, a8}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					return fastCallIF(cfn, ints, 8, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			} else {
+				impl := func(a1 uintptr, a2 uintptr, a3 uintptr, a4 uintptr, a5 uintptr, a6 uintptr, f1 float64, a7 uintptr, a8 uintptr) {
+					ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7, a8}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					fastCallIF(cfn, ints, 8, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			}
+		case 7:
+			if hasReturn {
+				impl := func(a1 uintptr, a2 uintptr, a3 uintptr, a4 uintptr, a5 uintptr, a6 uintptr, a7 uintptr, f1 float64, a8 uintptr) uintptr {
+					ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7, a8}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					return fastCallIF(cfn, ints, 8, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			} else {
+				impl := func(a1 uintptr, a2 uintptr, a3 uintptr, a4 uintptr, a5 uintptr, a6 uintptr, a7 uintptr, f1 float64, a8 uintptr) {
+					ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7, a8}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					fastCallIF(cfn, ints, 8, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			}
+		}
+	case 10:
+		switch floatPos {
+		case 0:
+			if hasReturn {
+				impl := func(f1 float64, a1 uintptr, a2 uintptr, a3 uintptr, a4 uintptr, a5 uintptr, a6 uintptr, a7 uintptr, a8 uintptr, a9 uintptr) uintptr {
+					ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7, a8, a9}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					return fastCallIF(cfn, ints, 9, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			} else {
+				impl := func(f1 float64, a1 uintptr, a2 uintptr, a3 uintptr, a4 uintptr, a5 uintptr, a6 uintptr, a7 uintptr, a8 uintptr, a9 uintptr) {
+					ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7, a8, a9}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					fastCallIF(cfn, ints, 9, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			}
+		case 1:
+			if hasReturn {
+				impl := func(a1 uintptr, f1 float64, a2 uintptr, a3 uintptr, a4 uintptr, a5 uintptr, a6 uintptr, a7 uintptr, a8 uintptr, a9 uintptr) uintptr {
+					ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7, a8, a9}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					return fastCallIF(cfn, ints, 9, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			} else {
+				impl := func(a1 uintptr, f1 float64, a2 uintptr, a3 uintptr, a4 uintptr, a5 uintptr, a6 uintptr, a7 uintptr, a8 uintptr, a9 uintptr) {
+					ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7, a8, a9}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					fastCallIF(cfn, ints, 9, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			}
+		case 2:
+			if hasReturn {
+				impl := func(a1 uintptr, a2 uintptr, f1 float64, a3 uintptr, a4 uintptr, a5 uintptr, a6 uintptr, a7 uintptr, a8 uintptr, a9 uintptr) uintptr {
+					ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7, a8, a9}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					return fastCallIF(cfn, ints, 9, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			} else {
+				impl := func(a1 uintptr, a2 uintptr, f1 float64, a3 uintptr, a4 uintptr, a5 uintptr, a6 uintptr, a7 uintptr, a8 uintptr, a9 uintptr) {
+					ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7, a8, a9}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					fastCallIF(cfn, ints, 9, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			}
+		case 3:
+			if hasReturn {
+				impl := func(a1 uintptr, a2 uintptr, a3 uintptr, f1 float64, a4 uintptr, a5 uintptr, a6 uintptr, a7 uintptr, a8 uintptr, a9 uintptr) uintptr {
+					ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7, a8, a9}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					return fastCallIF(cfn, ints, 9, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			} else {
+				impl := func(a1 uintptr, a2 uintptr, a3 uintptr, f1 float64, a4 uintptr, a5 uintptr, a6 uintptr, a7 uintptr, a8 uintptr, a9 uintptr) {
+					ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7, a8, a9}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					fastCallIF(cfn, ints, 9, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			}
+		case 4:
+			if hasReturn {
+				impl := func(a1 uintptr, a2 uintptr, a3 uintptr, a4 uintptr, f1 float64, a5 uintptr, a6 uintptr, a7 uintptr, a8 uintptr, a9 uintptr) uintptr {
+					ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7, a8, a9}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					return fastCallIF(cfn, ints, 9, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			} else {
+				impl := func(a1 uintptr, a2 uintptr, a3 uintptr, a4 uintptr, f1 float64, a5 uintptr, a6 uintptr, a7 uintptr, a8 uintptr, a9 uintptr) {
+					ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7, a8, a9}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					fastCallIF(cfn, ints, 9, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			}
+		case 5:
+			if hasReturn {
+				impl := func(a1 uintptr, a2 uintptr, a3 uintptr, a4 uintptr, a5 uintptr, f1 float64, a6 uintptr, a7 uintptr, a8 uintptr, a9 uintptr) uintptr {
+					ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7, a8, a9}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					return fastCallIF(cfn, ints, 9, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			} else {
+				impl := func(a1 uintptr, a2 uintptr, a3 uintptr, a4 uintptr, a5 uintptr, f1 float64, a6 uintptr, a7 uintptr, a8 uintptr, a9 uintptr) {
+					ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7, a8, a9}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					fastCallIF(cfn, ints, 9, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			}
+		case 6:
+			if hasReturn {
+				impl := func(a1 uintptr, a2 uintptr, a3 uintptr, a4 uintptr, a5 uintptr, a6 uintptr, f1 float64, a7 uintptr, a8 uintptr, a9 uintptr) uintptr {
+					ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7, a8, a9}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					return fastCallIF(cfn, ints, 9, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			} else {
+				impl := func(a1 uintptr, a2 uintptr, a3 uintptr, a4 uintptr, a5 uintptr, a6 uintptr, f1 float64, a7 uintptr, a8 uintptr, a9 uintptr) {
+					ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7, a8, a9}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					fastCallIF(cfn, ints, 9, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			}
+		case 7:
+			if hasReturn {
+				impl := func(a1 uintptr, a2 uintptr, a3 uintptr, a4 uintptr, a5 uintptr, a6 uintptr, a7 uintptr, f1 float64, a8 uintptr, a9 uintptr) uintptr {
+					ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7, a8, a9}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					return fastCallIF(cfn, ints, 9, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			} else {
+				impl := func(a1 uintptr, a2 uintptr, a3 uintptr, a4 uintptr, a5 uintptr, a6 uintptr, a7 uintptr, f1 float64, a8 uintptr, a9 uintptr) {
+					ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7, a8, a9}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					fastCallIF(cfn, ints, 9, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			}
+		case 8:
+			if hasReturn {
+				impl := func(a1 uintptr, a2 uintptr, a3 uintptr, a4 uintptr, a5 uintptr, a6 uintptr, a7 uintptr, a8 uintptr, f1 float64, a9 uintptr) uintptr {
+					ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7, a8, a9}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					return fastCallIF(cfn, ints, 9, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			} else {
+				impl := func(a1 uintptr, a2 uintptr, a3 uintptr, a4 uintptr, a5 uintptr, a6 uintptr, a7 uintptr, a8 uintptr, f1 float64, a9 uintptr) {
+					ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7, a8, a9}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					fastCallIF(cfn, ints, 9, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			}
+		}
+	case 11:
+		switch floatPos {
+		case 0:
+			if hasReturn {
+				impl := func(f1 float64, a1 uintptr, a2 uintptr, a3 uintptr, a4 uintptr, a5 uintptr, a6 uintptr, a7 uintptr, a8 uintptr, a9 uintptr, a10 uintptr) uintptr {
+					ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7, a8, a9, a10}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					return fastCallIF(cfn, ints, 10, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			} else {
+				impl := func(f1 float64, a1 uintptr, a2 uintptr, a3 uintptr, a4 uintptr, a5 uintptr, a6 uintptr, a7 uintptr, a8 uintptr, a9 uintptr, a10 uintptr) {
+					ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7, a8, a9, a10}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					fastCallIF(cfn, ints, 10, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			}
+		case 1:
+			if hasReturn {
+				impl := func(a1 uintptr, f1 float64, a2 uintptr, a3 uintptr, a4 uintptr, a5 uintptr, a6 uintptr, a7 uintptr, a8 uintptr, a9 uintptr, a10 uintptr) uintptr {
+					ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7, a8, a9, a10}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					return fastCallIF(cfn, ints, 10, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			} else {
+				impl := func(a1 uintptr, f1 float64, a2 uintptr, a3 uintptr, a4 uintptr, a5 uintptr, a6 uintptr, a7 uintptr, a8 uintptr, a9 uintptr, a10 uintptr) {
+					ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7, a8, a9, a10}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					fastCallIF(cfn, ints, 10, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			}
+		case 2:
+			if hasReturn {
+				impl := func(a1 uintptr, a2 uintptr, f1 float64, a3 uintptr, a4 uintptr, a5 uintptr, a6 uintptr, a7 uintptr, a8 uintptr, a9 uintptr, a10 uintptr) uintptr {
+					ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7, a8, a9, a10}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					return fastCallIF(cfn, ints, 10, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			} else {
+				impl := func(a1 uintptr, a2 uintptr, f1 float64, a3 uintptr, a4 uintptr, a5 uintptr, a6 uintptr, a7 uintptr, a8 uintptr, a9 uintptr, a10 uintptr) {
+					ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7, a8, a9, a10}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					fastCallIF(cfn, ints, 10, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			}
+		case 3:
+			if hasReturn {
+				impl := func(a1 uintptr, a2 uintptr, a3 uintptr, f1 float64, a4 uintptr, a5 uintptr, a6 uintptr, a7 uintptr, a8 uintptr, a9 uintptr, a10 uintptr) uintptr {
+					ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7, a8, a9, a10}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					return fastCallIF(cfn, ints, 10, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			} else {
+				impl := func(a1 uintptr, a2 uintptr, a3 uintptr, f1 float64, a4 uintptr, a5 uintptr, a6 uintptr, a7 uintptr, a8 uintptr, a9 uintptr, a10 uintptr) {
+					ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7, a8, a9, a10}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					fastCallIF(cfn, ints, 10, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			}
+		case 4:
+			if hasReturn {
+				impl := func(a1 uintptr, a2 uintptr, a3 uintptr, a4 uintptr, f1 float64, a5 uintptr, a6 uintptr, a7 uintptr, a8 uintptr, a9 uintptr, a10 uintptr) uintptr {
+					ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7, a8, a9, a10}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					return fastCallIF(cfn, ints, 10, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			} else {
+				impl := func(a1 uintptr, a2 uintptr, a3 uintptr, a4 uintptr, f1 float64, a5 uintptr, a6 uintptr, a7 uintptr, a8 uintptr, a9 uintptr, a10 uintptr) {
+					ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7, a8, a9, a10}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					fastCallIF(cfn, ints, 10, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			}
+		case 5:
+			if hasReturn {
+				impl := func(a1 uintptr, a2 uintptr, a3 uintptr, a4 uintptr, a5 uintptr, f1 float64, a6 uintptr, a7 uintptr, a8 uintptr, a9 uintptr, a10 uintptr) uintptr {
+					ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7, a8, a9, a10}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					return fastCallIF(cfn, ints, 10, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			} else {
+				impl := func(a1 uintptr, a2 uintptr, a3 uintptr, a4 uintptr, a5 uintptr, f1 float64, a6 uintptr, a7 uintptr, a8 uintptr, a9 uintptr, a10 uintptr) {
+					ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7, a8, a9, a10}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					fastCallIF(cfn, ints, 10, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			}
+		case 6:
+			if hasReturn {
+				impl := func(a1 uintptr, a2 uintptr, a3 uintptr, a4 uintptr, a5 uintptr, a6 uintptr, f1 float64, a7 uintptr, a8 uintptr, a9 uintptr, a10 uintptr) uintptr {
+					ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7, a8, a9, a10}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					return fastCallIF(cfn, ints, 10, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			} else {
+				impl := func(a1 uintptr, a2 uintptr, a3 uintptr, a4 uintptr, a5 uintptr, a6 uintptr, f1 float64, a7 uintptr, a8 uintptr, a9 uintptr, a10 uintptr) {
+					ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7, a8, a9, a10}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					fastCallIF(cfn, ints, 10, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			}
+		case 7:
+			if hasReturn {
+				impl := func(a1 uintptr, a2 uintptr, a3 uintptr, a4 uintptr, a5 uintptr, a6 uintptr, a7 uintptr, f1 float64, a8 uintptr, a9 uintptr, a10 uintptr) uintptr {
+					ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7, a8, a9, a10}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					return fastCallIF(cfn, ints, 10, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			} else {
+				impl := func(a1 uintptr, a2 uintptr, a3 uintptr, a4 uintptr, a5 uintptr, a6 uintptr, a7 uintptr, f1 float64, a8 uintptr, a9 uintptr, a10 uintptr) {
+					ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7, a8, a9, a10}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					fastCallIF(cfn, ints, 10, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			}
+		case 8:
+			if hasReturn {
+				impl := func(a1 uintptr, a2 uintptr, a3 uintptr, a4 uintptr, a5 uintptr, a6 uintptr, a7 uintptr, a8 uintptr, f1 float64, a9 uintptr, a10 uintptr) uintptr {
+					ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7, a8, a9, a10}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					return fastCallIF(cfn, ints, 10, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			} else {
+				impl := func(a1 uintptr, a2 uintptr, a3 uintptr, a4 uintptr, a5 uintptr, a6 uintptr, a7 uintptr, a8 uintptr, f1 float64, a9 uintptr, a10 uintptr) {
+					ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7, a8, a9, a10}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					fastCallIF(cfn, ints, 10, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			}
+		case 9:
+			if hasReturn {
+				impl := func(a1 uintptr, a2 uintptr, a3 uintptr, a4 uintptr, a5 uintptr, a6 uintptr, a7 uintptr, a8 uintptr, a9 uintptr, f1 float64, a10 uintptr) uintptr {
+					ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7, a8, a9, a10}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					return fastCallIF(cfn, ints, 10, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			} else {
+				impl := func(a1 uintptr, a2 uintptr, a3 uintptr, a4 uintptr, a5 uintptr, a6 uintptr, a7 uintptr, a8 uintptr, a9 uintptr, f1 float64, a10 uintptr) {
+					ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7, a8, a9, a10}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					fastCallIF(cfn, ints, 10, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			}
+		}
+	case 12:
+		switch floatPos {
+		case 0:
+			if hasReturn {
+				impl := func(f1 float64, a1 uintptr, a2 uintptr, a3 uintptr, a4 uintptr, a5 uintptr, a6 uintptr, a7 uintptr, a8 uintptr, a9 uintptr, a10 uintptr, a11 uintptr) uintptr {
+					ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					return fastCallIF(cfn, ints, 11, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			} else {
+				impl := func(f1 float64, a1 uintptr, a2 uintptr, a3 uintptr, a4 uintptr, a5 uintptr, a6 uintptr, a7 uintptr, a8 uintptr, a9 uintptr, a10 uintptr, a11 uintptr) {
+					ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					fastCallIF(cfn, ints, 11, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			}
+		case 1:
+			if hasReturn {
+				impl := func(a1 uintptr, f1 float64, a2 uintptr, a3 uintptr, a4 uintptr, a5 uintptr, a6 uintptr, a7 uintptr, a8 uintptr, a9 uintptr, a10 uintptr, a11 uintptr) uintptr {
+					ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					return fastCallIF(cfn, ints, 11, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			} else {
+				impl := func(a1 uintptr, f1 float64, a2 uintptr, a3 uintptr, a4 uintptr, a5 uintptr, a6 uintptr, a7 uintptr, a8 uintptr, a9 uintptr, a10 uintptr, a11 uintptr) {
+					ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					fastCallIF(cfn, ints, 11, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			}
+		case 2:
+			if hasReturn {
+				impl := func(a1 uintptr, a2 uintptr, f1 float64, a3 uintptr, a4 uintptr, a5 uintptr, a6 uintptr, a7 uintptr, a8 uintptr, a9 uintptr, a10 uintptr, a11 uintptr) uintptr {
+					ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					return fastCallIF(cfn, ints, 11, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			} else {
+				impl := func(a1 uintptr, a2 uintptr, f1 float64, a3 uintptr, a4 uintptr, a5 uintptr, a6 uintptr, a7 uintptr, a8 uintptr, a9 uintptr, a10 uintptr, a11 uintptr) {
+					ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					fastCallIF(cfn, ints, 11, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			}
+		case 3:
+			if hasReturn {
+				impl := func(a1 uintptr, a2 uintptr, a3 uintptr, f1 float64, a4 uintptr, a5 uintptr, a6 uintptr, a7 uintptr, a8 uintptr, a9 uintptr, a10 uintptr, a11 uintptr) uintptr {
+					ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					return fastCallIF(cfn, ints, 11, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			} else {
+				impl := func(a1 uintptr, a2 uintptr, a3 uintptr, f1 float64, a4 uintptr, a5 uintptr, a6 uintptr, a7 uintptr, a8 uintptr, a9 uintptr, a10 uintptr, a11 uintptr) {
+					ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					fastCallIF(cfn, ints, 11, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			}
+		case 4:
+			if hasReturn {
+				impl := func(a1 uintptr, a2 uintptr, a3 uintptr, a4 uintptr, f1 float64, a5 uintptr, a6 uintptr, a7 uintptr, a8 uintptr, a9 uintptr, a10 uintptr, a11 uintptr) uintptr {
+					ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					return fastCallIF(cfn, ints, 11, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			} else {
+				impl := func(a1 uintptr, a2 uintptr, a3 uintptr, a4 uintptr, f1 float64, a5 uintptr, a6 uintptr, a7 uintptr, a8 uintptr, a9 uintptr, a10 uintptr, a11 uintptr) {
+					ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					fastCallIF(cfn, ints, 11, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			}
+		case 5:
+			if hasReturn {
+				impl := func(a1 uintptr, a2 uintptr, a3 uintptr, a4 uintptr, a5 uintptr, f1 float64, a6 uintptr, a7 uintptr, a8 uintptr, a9 uintptr, a10 uintptr, a11 uintptr) uintptr {
+					ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					return fastCallIF(cfn, ints, 11, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			} else {
+				impl := func(a1 uintptr, a2 uintptr, a3 uintptr, a4 uintptr, a5 uintptr, f1 float64, a6 uintptr, a7 uintptr, a8 uintptr, a9 uintptr, a10 uintptr, a11 uintptr) {
+					ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					fastCallIF(cfn, ints, 11, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			}
+		case 6:
+			if hasReturn {
+				impl := func(a1 uintptr, a2 uintptr, a3 uintptr, a4 uintptr, a5 uintptr, a6 uintptr, f1 float64, a7 uintptr, a8 uintptr, a9 uintptr, a10 uintptr, a11 uintptr) uintptr {
+					ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					return fastCallIF(cfn, ints, 11, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			} else {
+				impl := func(a1 uintptr, a2 uintptr, a3 uintptr, a4 uintptr, a5 uintptr, a6 uintptr, f1 float64, a7 uintptr, a8 uintptr, a9 uintptr, a10 uintptr, a11 uintptr) {
+					ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					fastCallIF(cfn, ints, 11, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			}
+		case 7:
+			if hasReturn {
+				impl := func(a1 uintptr, a2 uintptr, a3 uintptr, a4 uintptr, a5 uintptr, a6 uintptr, a7 uintptr, f1 float64, a8 uintptr, a9 uintptr, a10 uintptr, a11 uintptr) uintptr {
+					ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					return fastCallIF(cfn, ints, 11, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			} else {
+				impl := func(a1 uintptr, a2 uintptr, a3 uintptr, a4 uintptr, a5 uintptr, a6 uintptr, a7 uintptr, f1 float64, a8 uintptr, a9 uintptr, a10 uintptr, a11 uintptr) {
+					ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					fastCallIF(cfn, ints, 11, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			}
+		case 8:
+			if hasReturn {
+				impl := func(a1 uintptr, a2 uintptr, a3 uintptr, a4 uintptr, a5 uintptr, a6 uintptr, a7 uintptr, a8 uintptr, f1 float64, a9 uintptr, a10 uintptr, a11 uintptr) uintptr {
+					ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					return fastCallIF(cfn, ints, 11, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			} else {
+				impl := func(a1 uintptr, a2 uintptr, a3 uintptr, a4 uintptr, a5 uintptr, a6 uintptr, a7 uintptr, a8 uintptr, f1 float64, a9 uintptr, a10 uintptr, a11 uintptr) {
+					ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					fastCallIF(cfn, ints, 11, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			}
+		case 9:
+			if hasReturn {
+				impl := func(a1 uintptr, a2 uintptr, a3 uintptr, a4 uintptr, a5 uintptr, a6 uintptr, a7 uintptr, a8 uintptr, a9 uintptr, f1 float64, a10 uintptr, a11 uintptr) uintptr {
+					ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					return fastCallIF(cfn, ints, 11, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			} else {
+				impl := func(a1 uintptr, a2 uintptr, a3 uintptr, a4 uintptr, a5 uintptr, a6 uintptr, a7 uintptr, a8 uintptr, a9 uintptr, f1 float64, a10 uintptr, a11 uintptr) {
+					ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					fastCallIF(cfn, ints, 11, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			}
+		case 10:
+			if hasReturn {
+				impl := func(a1 uintptr, a2 uintptr, a3 uintptr, a4 uintptr, a5 uintptr, a6 uintptr, a7 uintptr, a8 uintptr, a9 uintptr, a10 uintptr, f1 float64, a11 uintptr) uintptr {
+					ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					return fastCallIF(cfn, ints, 11, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			} else {
+				impl := func(a1 uintptr, a2 uintptr, a3 uintptr, a4 uintptr, a5 uintptr, a6 uintptr, a7 uintptr, a8 uintptr, a9 uintptr, a10 uintptr, f1 float64, a11 uintptr) {
+					ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					fastCallIF(cfn, ints, 11, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			}
+		}
+	case 13:
+		switch floatPos {
+		case 0:
+			if hasReturn {
+				impl := func(f1 float64, a1 uintptr, a2 uintptr, a3 uintptr, a4 uintptr, a5 uintptr, a6 uintptr, a7 uintptr, a8 uintptr, a9 uintptr, a10 uintptr, a11 uintptr, a12 uintptr) uintptr {
+					ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					return fastCallIF(cfn, ints, 12, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			} else {
+				impl := func(f1 float64, a1 uintptr, a2 uintptr, a3 uintptr, a4 uintptr, a5 uintptr, a6 uintptr, a7 uintptr, a8 uintptr, a9 uintptr, a10 uintptr, a11 uintptr, a12 uintptr) {
+					ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					fastCallIF(cfn, ints, 12, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			}
+		case 1:
+			if hasReturn {
+				impl := func(a1 uintptr, f1 float64, a2 uintptr, a3 uintptr, a4 uintptr, a5 uintptr, a6 uintptr, a7 uintptr, a8 uintptr, a9 uintptr, a10 uintptr, a11 uintptr, a12 uintptr) uintptr {
+					ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					return fastCallIF(cfn, ints, 12, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			} else {
+				impl := func(a1 uintptr, f1 float64, a2 uintptr, a3 uintptr, a4 uintptr, a5 uintptr, a6 uintptr, a7 uintptr, a8 uintptr, a9 uintptr, a10 uintptr, a11 uintptr, a12 uintptr) {
+					ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					fastCallIF(cfn, ints, 12, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			}
+		case 2:
+			if hasReturn {
+				impl := func(a1 uintptr, a2 uintptr, f1 float64, a3 uintptr, a4 uintptr, a5 uintptr, a6 uintptr, a7 uintptr, a8 uintptr, a9 uintptr, a10 uintptr, a11 uintptr, a12 uintptr) uintptr {
+					ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					return fastCallIF(cfn, ints, 12, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			} else {
+				impl := func(a1 uintptr, a2 uintptr, f1 float64, a3 uintptr, a4 uintptr, a5 uintptr, a6 uintptr, a7 uintptr, a8 uintptr, a9 uintptr, a10 uintptr, a11 uintptr, a12 uintptr) {
+					ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					fastCallIF(cfn, ints, 12, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			}
+		case 3:
+			if hasReturn {
+				impl := func(a1 uintptr, a2 uintptr, a3 uintptr, f1 float64, a4 uintptr, a5 uintptr, a6 uintptr, a7 uintptr, a8 uintptr, a9 uintptr, a10 uintptr, a11 uintptr, a12 uintptr) uintptr {
+					ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					return fastCallIF(cfn, ints, 12, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			} else {
+				impl := func(a1 uintptr, a2 uintptr, a3 uintptr, f1 float64, a4 uintptr, a5 uintptr, a6 uintptr, a7 uintptr, a8 uintptr, a9 uintptr, a10 uintptr, a11 uintptr, a12 uintptr) {
+					ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					fastCallIF(cfn, ints, 12, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			}
+		case 4:
+			if hasReturn {
+				impl := func(a1 uintptr, a2 uintptr, a3 uintptr, a4 uintptr, f1 float64, a5 uintptr, a6 uintptr, a7 uintptr, a8 uintptr, a9 uintptr, a10 uintptr, a11 uintptr, a12 uintptr) uintptr {
+					ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					return fastCallIF(cfn, ints, 12, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			} else {
+				impl := func(a1 uintptr, a2 uintptr, a3 uintptr, a4 uintptr, f1 float64, a5 uintptr, a6 uintptr, a7 uintptr, a8 uintptr, a9 uintptr, a10 uintptr, a11 uintptr, a12 uintptr) {
+					ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					fastCallIF(cfn, ints, 12, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			}
+		case 5:
+			if hasReturn {
+				impl := func(a1 uintptr, a2 uintptr, a3 uintptr, a4 uintptr, a5 uintptr, f1 float64, a6 uintptr, a7 uintptr, a8 uintptr, a9 uintptr, a10 uintptr, a11 uintptr, a12 uintptr) uintptr {
+					ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					return fastCallIF(cfn, ints, 12, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			} else {
+				impl := func(a1 uintptr, a2 uintptr, a3 uintptr, a4 uintptr, a5 uintptr, f1 float64, a6 uintptr, a7 uintptr, a8 uintptr, a9 uintptr, a10 uintptr, a11 uintptr, a12 uintptr) {
+					ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					fastCallIF(cfn, ints, 12, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			}
+		case 6:
+			if hasReturn {
+				impl := func(a1 uintptr, a2 uintptr, a3 uintptr, a4 uintptr, a5 uintptr, a6 uintptr, f1 float64, a7 uintptr, a8 uintptr, a9 uintptr, a10 uintptr, a11 uintptr, a12 uintptr) uintptr {
+					ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					return fastCallIF(cfn, ints, 12, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			} else {
+				impl := func(a1 uintptr, a2 uintptr, a3 uintptr, a4 uintptr, a5 uintptr, a6 uintptr, f1 float64, a7 uintptr, a8 uintptr, a9 uintptr, a10 uintptr, a11 uintptr, a12 uintptr) {
+					ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					fastCallIF(cfn, ints, 12, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			}
+		case 7:
+			if hasReturn {
+				impl := func(a1 uintptr, a2 uintptr, a3 uintptr, a4 uintptr, a5 uintptr, a6 uintptr, a7 uintptr, f1 float64, a8 uintptr, a9 uintptr, a10 uintptr, a11 uintptr, a12 uintptr) uintptr {
+					ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					return fastCallIF(cfn, ints, 12, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			} else {
+				impl := func(a1 uintptr, a2 uintptr, a3 uintptr, a4 uintptr, a5 uintptr, a6 uintptr, a7 uintptr, f1 float64, a8 uintptr, a9 uintptr, a10 uintptr, a11 uintptr, a12 uintptr) {
+					ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					fastCallIF(cfn, ints, 12, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			}
+		case 8:
+			if hasReturn {
+				impl := func(a1 uintptr, a2 uintptr, a3 uintptr, a4 uintptr, a5 uintptr, a6 uintptr, a7 uintptr, a8 uintptr, f1 float64, a9 uintptr, a10 uintptr, a11 uintptr, a12 uintptr) uintptr {
+					ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					return fastCallIF(cfn, ints, 12, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			} else {
+				impl := func(a1 uintptr, a2 uintptr, a3 uintptr, a4 uintptr, a5 uintptr, a6 uintptr, a7 uintptr, a8 uintptr, f1 float64, a9 uintptr, a10 uintptr, a11 uintptr, a12 uintptr) {
+					ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					fastCallIF(cfn, ints, 12, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			}
+		case 9:
+			if hasReturn {
+				impl := func(a1 uintptr, a2 uintptr, a3 uintptr, a4 uintptr, a5 uintptr, a6 uintptr, a7 uintptr, a8 uintptr, a9 uintptr, f1 float64, a10 uintptr, a11 uintptr, a12 uintptr) uintptr {
+					ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					return fastCallIF(cfn, ints, 12, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			} else {
+				impl := func(a1 uintptr, a2 uintptr, a3 uintptr, a4 uintptr, a5 uintptr, a6 uintptr, a7 uintptr, a8 uintptr, a9 uintptr, f1 float64, a10 uintptr, a11 uintptr, a12 uintptr) {
+					ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					fastCallIF(cfn, ints, 12, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			}
+		case 10:
+			if hasReturn {
+				impl := func(a1 uintptr, a2 uintptr, a3 uintptr, a4 uintptr, a5 uintptr, a6 uintptr, a7 uintptr, a8 uintptr, a9 uintptr, a10 uintptr, f1 float64, a11 uintptr, a12 uintptr) uintptr {
+					ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					return fastCallIF(cfn, ints, 12, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			} else {
+				impl := func(a1 uintptr, a2 uintptr, a3 uintptr, a4 uintptr, a5 uintptr, a6 uintptr, a7 uintptr, a8 uintptr, a9 uintptr, a10 uintptr, f1 float64, a11 uintptr, a12 uintptr) {
+					ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					fastCallIF(cfn, ints, 12, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			}
+		case 11:
+			if hasReturn {
+				impl := func(a1 uintptr, a2 uintptr, a3 uintptr, a4 uintptr, a5 uintptr, a6 uintptr, a7 uintptr, a8 uintptr, a9 uintptr, a10 uintptr, a11 uintptr, f1 float64, a12 uintptr) uintptr {
+					ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					return fastCallIF(cfn, ints, 12, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			} else {
+				impl := func(a1 uintptr, a2 uintptr, a3 uintptr, a4 uintptr, a5 uintptr, a6 uintptr, a7 uintptr, a8 uintptr, a9 uintptr, a10 uintptr, a11 uintptr, f1 float64, a12 uintptr) {
+					ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					fastCallIF(cfn, ints, 12, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			}
+		}
+	case 14:
+		switch floatPos {
+		case 0:
+			if hasReturn {
+				impl := func(f1 float64, a1 uintptr, a2 uintptr, a3 uintptr, a4 uintptr, a5 uintptr, a6 uintptr, a7 uintptr, a8 uintptr, a9 uintptr, a10 uintptr, a11 uintptr, a12 uintptr, a13 uintptr) uintptr {
+					ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					return fastCallIF(cfn, ints, 13, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			} else {
+				impl := func(f1 float64, a1 uintptr, a2 uintptr, a3 uintptr, a4 uintptr, a5 uintptr, a6 uintptr, a7 uintptr, a8 uintptr, a9 uintptr, a10 uintptr, a11 uintptr, a12 uintptr, a13 uintptr) {
+					ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					fastCallIF(cfn, ints, 13, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			}
+		case 1:
+			if hasReturn {
+				impl := func(a1 uintptr, f1 float64, a2 uintptr, a3 uintptr, a4 uintptr, a5 uintptr, a6 uintptr, a7 uintptr, a8 uintptr, a9 uintptr, a10 uintptr, a11 uintptr, a12 uintptr, a13 uintptr) uintptr {
+					ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					return fastCallIF(cfn, ints, 13, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			} else {
+				impl := func(a1 uintptr, f1 float64, a2 uintptr, a3 uintptr, a4 uintptr, a5 uintptr, a6 uintptr, a7 uintptr, a8 uintptr, a9 uintptr, a10 uintptr, a11 uintptr, a12 uintptr, a13 uintptr) {
+					ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					fastCallIF(cfn, ints, 13, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			}
+		case 2:
+			if hasReturn {
+				impl := func(a1 uintptr, a2 uintptr, f1 float64, a3 uintptr, a4 uintptr, a5 uintptr, a6 uintptr, a7 uintptr, a8 uintptr, a9 uintptr, a10 uintptr, a11 uintptr, a12 uintptr, a13 uintptr) uintptr {
+					ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					return fastCallIF(cfn, ints, 13, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			} else {
+				impl := func(a1 uintptr, a2 uintptr, f1 float64, a3 uintptr, a4 uintptr, a5 uintptr, a6 uintptr, a7 uintptr, a8 uintptr, a9 uintptr, a10 uintptr, a11 uintptr, a12 uintptr, a13 uintptr) {
+					ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					fastCallIF(cfn, ints, 13, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			}
+		case 3:
+			if hasReturn {
+				impl := func(a1 uintptr, a2 uintptr, a3 uintptr, f1 float64, a4 uintptr, a5 uintptr, a6 uintptr, a7 uintptr, a8 uintptr, a9 uintptr, a10 uintptr, a11 uintptr, a12 uintptr, a13 uintptr) uintptr {
+					ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					return fastCallIF(cfn, ints, 13, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			} else {
+				impl := func(a1 uintptr, a2 uintptr, a3 uintptr, f1 float64, a4 uintptr, a5 uintptr, a6 uintptr, a7 uintptr, a8 uintptr, a9 uintptr, a10 uintptr, a11 uintptr, a12 uintptr, a13 uintptr) {
+					ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					fastCallIF(cfn, ints, 13, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			}
+		case 4:
+			if hasReturn {
+				impl := func(a1 uintptr, a2 uintptr, a3 uintptr, a4 uintptr, f1 float64, a5 uintptr, a6 uintptr, a7 uintptr, a8 uintptr, a9 uintptr, a10 uintptr, a11 uintptr, a12 uintptr, a13 uintptr) uintptr {
+					ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					return fastCallIF(cfn, ints, 13, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			} else {
+				impl := func(a1 uintptr, a2 uintptr, a3 uintptr, a4 uintptr, f1 float64, a5 uintptr, a6 uintptr, a7 uintptr, a8 uintptr, a9 uintptr, a10 uintptr, a11 uintptr, a12 uintptr, a13 uintptr) {
+					ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					fastCallIF(cfn, ints, 13, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			}
+		case 5:
+			if hasReturn {
+				impl := func(a1 uintptr, a2 uintptr, a3 uintptr, a4 uintptr, a5 uintptr, f1 float64, a6 uintptr, a7 uintptr, a8 uintptr, a9 uintptr, a10 uintptr, a11 uintptr, a12 uintptr, a13 uintptr) uintptr {
+					ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					return fastCallIF(cfn, ints, 13, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			} else {
+				impl := func(a1 uintptr, a2 uintptr, a3 uintptr, a4 uintptr, a5 uintptr, f1 float64, a6 uintptr, a7 uintptr, a8 uintptr, a9 uintptr, a10 uintptr, a11 uintptr, a12 uintptr, a13 uintptr) {
+					ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					fastCallIF(cfn, ints, 13, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			}
+		case 6:
+			if hasReturn {
+				impl := func(a1 uintptr, a2 uintptr, a3 uintptr, a4 uintptr, a5 uintptr, a6 uintptr, f1 float64, a7 uintptr, a8 uintptr, a9 uintptr, a10 uintptr, a11 uintptr, a12 uintptr, a13 uintptr) uintptr {
+					ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					return fastCallIF(cfn, ints, 13, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			} else {
+				impl := func(a1 uintptr, a2 uintptr, a3 uintptr, a4 uintptr, a5 uintptr, a6 uintptr, f1 float64, a7 uintptr, a8 uintptr, a9 uintptr, a10 uintptr, a11 uintptr, a12 uintptr, a13 uintptr) {
+					ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					fastCallIF(cfn, ints, 13, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			}
+		case 7:
+			if hasReturn {
+				impl := func(a1 uintptr, a2 uintptr, a3 uintptr, a4 uintptr, a5 uintptr, a6 uintptr, a7 uintptr, f1 float64, a8 uintptr, a9 uintptr, a10 uintptr, a11 uintptr, a12 uintptr, a13 uintptr) uintptr {
+					ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					return fastCallIF(cfn, ints, 13, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			} else {
+				impl := func(a1 uintptr, a2 uintptr, a3 uintptr, a4 uintptr, a5 uintptr, a6 uintptr, a7 uintptr, f1 float64, a8 uintptr, a9 uintptr, a10 uintptr, a11 uintptr, a12 uintptr, a13 uintptr) {
+					ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					fastCallIF(cfn, ints, 13, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			}
+		case 8:
+			if hasReturn {
+				impl := func(a1 uintptr, a2 uintptr, a3 uintptr, a4 uintptr, a5 uintptr, a6 uintptr, a7 uintptr, a8 uintptr, f1 float64, a9 uintptr, a10 uintptr, a11 uintptr, a12 uintptr, a13 uintptr) uintptr {
+					ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					return fastCallIF(cfn, ints, 13, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			} else {
+				impl := func(a1 uintptr, a2 uintptr, a3 uintptr, a4 uintptr, a5 uintptr, a6 uintptr, a7 uintptr, a8 uintptr, f1 float64, a9 uintptr, a10 uintptr, a11 uintptr, a12 uintptr, a13 uintptr) {
+					ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					fastCallIF(cfn, ints, 13, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			}
+		case 9:
+			if hasReturn {
+				impl := func(a1 uintptr, a2 uintptr, a3 uintptr, a4 uintptr, a5 uintptr, a6 uintptr, a7 uintptr, a8 uintptr, a9 uintptr, f1 float64, a10 uintptr, a11 uintptr, a12 uintptr, a13 uintptr) uintptr {
+					ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					return fastCallIF(cfn, ints, 13, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			} else {
+				impl := func(a1 uintptr, a2 uintptr, a3 uintptr, a4 uintptr, a5 uintptr, a6 uintptr, a7 uintptr, a8 uintptr, a9 uintptr, f1 float64, a10 uintptr, a11 uintptr, a12 uintptr, a13 uintptr) {
+					ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					fastCallIF(cfn, ints, 13, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			}
+		case 10:
+			if hasReturn {
+				impl := func(a1 uintptr, a2 uintptr, a3 uintptr, a4 uintptr, a5 uintptr, a6 uintptr, a7 uintptr, a8 uintptr, a9 uintptr, a10 uintptr, f1 float64, a11 uintptr, a12 uintptr, a13 uintptr) uintptr {
+					ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					return fastCallIF(cfn, ints, 13, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			} else {
+				impl := func(a1 uintptr, a2 uintptr, a3 uintptr, a4 uintptr, a5 uintptr, a6 uintptr, a7 uintptr, a8 uintptr, a9 uintptr, a10 uintptr, f1 float64, a11 uintptr, a12 uintptr, a13 uintptr) {
+					ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					fastCallIF(cfn, ints, 13, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			}
+		case 11:
+			if hasReturn {
+				impl := func(a1 uintptr, a2 uintptr, a3 uintptr, a4 uintptr, a5 uintptr, a6 uintptr, a7 uintptr, a8 uintptr, a9 uintptr, a10 uintptr, a11 uintptr, f1 float64, a12 uintptr, a13 uintptr) uintptr {
+					ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					return fastCallIF(cfn, ints, 13, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			} else {
+				impl := func(a1 uintptr, a2 uintptr, a3 uintptr, a4 uintptr, a5 uintptr, a6 uintptr, a7 uintptr, a8 uintptr, a9 uintptr, a10 uintptr, a11 uintptr, f1 float64, a12 uintptr, a13 uintptr) {
+					ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					fastCallIF(cfn, ints, 13, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			}
+		case 12:
+			if hasReturn {
+				impl := func(a1 uintptr, a2 uintptr, a3 uintptr, a4 uintptr, a5 uintptr, a6 uintptr, a7 uintptr, a8 uintptr, a9 uintptr, a10 uintptr, a11 uintptr, a12 uintptr, f1 float64, a13 uintptr) uintptr {
+					ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					return fastCallIF(cfn, ints, 13, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			} else {
+				impl := func(a1 uintptr, a2 uintptr, a3 uintptr, a4 uintptr, a5 uintptr, a6 uintptr, a7 uintptr, a8 uintptr, a9 uintptr, a10 uintptr, a11 uintptr, a12 uintptr, f1 float64, a13 uintptr) {
+					ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					fastCallIF(cfn, ints, 13, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			}
+		}
+	case 15:
+		switch floatPos {
+		case 0:
+			if hasReturn {
+				impl := func(f1 float64, a1 uintptr, a2 uintptr, a3 uintptr, a4 uintptr, a5 uintptr, a6 uintptr, a7 uintptr, a8 uintptr, a9 uintptr, a10 uintptr, a11 uintptr, a12 uintptr, a13 uintptr, a14 uintptr) uintptr {
+					ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					return fastCallIF(cfn, ints, 14, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			} else {
+				impl := func(f1 float64, a1 uintptr, a2 uintptr, a3 uintptr, a4 uintptr, a5 uintptr, a6 uintptr, a7 uintptr, a8 uintptr, a9 uintptr, a10 uintptr, a11 uintptr, a12 uintptr, a13 uintptr, a14 uintptr) {
+					ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					fastCallIF(cfn, ints, 14, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			}
+		case 1:
+			if hasReturn {
+				impl := func(a1 uintptr, f1 float64, a2 uintptr, a3 uintptr, a4 uintptr, a5 uintptr, a6 uintptr, a7 uintptr, a8 uintptr, a9 uintptr, a10 uintptr, a11 uintptr, a12 uintptr, a13 uintptr, a14 uintptr) uintptr {
+					ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					return fastCallIF(cfn, ints, 14, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			} else {
+				impl := func(a1 uintptr, f1 float64, a2 uintptr, a3 uintptr, a4 uintptr, a5 uintptr, a6 uintptr, a7 uintptr, a8 uintptr, a9 uintptr, a10 uintptr, a11 uintptr, a12 uintptr, a13 uintptr, a14 uintptr) {
+					ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					fastCallIF(cfn, ints, 14, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			}
+		case 2:
+			if hasReturn {
+				impl := func(a1 uintptr, a2 uintptr, f1 float64, a3 uintptr, a4 uintptr, a5 uintptr, a6 uintptr, a7 uintptr, a8 uintptr, a9 uintptr, a10 uintptr, a11 uintptr, a12 uintptr, a13 uintptr, a14 uintptr) uintptr {
+					ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					return fastCallIF(cfn, ints, 14, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			} else {
+				impl := func(a1 uintptr, a2 uintptr, f1 float64, a3 uintptr, a4 uintptr, a5 uintptr, a6 uintptr, a7 uintptr, a8 uintptr, a9 uintptr, a10 uintptr, a11 uintptr, a12 uintptr, a13 uintptr, a14 uintptr) {
+					ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					fastCallIF(cfn, ints, 14, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			}
+		case 3:
+			if hasReturn {
+				impl := func(a1 uintptr, a2 uintptr, a3 uintptr, f1 float64, a4 uintptr, a5 uintptr, a6 uintptr, a7 uintptr, a8 uintptr, a9 uintptr, a10 uintptr, a11 uintptr, a12 uintptr, a13 uintptr, a14 uintptr) uintptr {
+					ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					return fastCallIF(cfn, ints, 14, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			} else {
+				impl := func(a1 uintptr, a2 uintptr, a3 uintptr, f1 float64, a4 uintptr, a5 uintptr, a6 uintptr, a7 uintptr, a8 uintptr, a9 uintptr, a10 uintptr, a11 uintptr, a12 uintptr, a13 uintptr, a14 uintptr) {
+					ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					fastCallIF(cfn, ints, 14, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			}
+		case 4:
+			if hasReturn {
+				impl := func(a1 uintptr, a2 uintptr, a3 uintptr, a4 uintptr, f1 float64, a5 uintptr, a6 uintptr, a7 uintptr, a8 uintptr, a9 uintptr, a10 uintptr, a11 uintptr, a12 uintptr, a13 uintptr, a14 uintptr) uintptr {
+					ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					return fastCallIF(cfn, ints, 14, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			} else {
+				impl := func(a1 uintptr, a2 uintptr, a3 uintptr, a4 uintptr, f1 float64, a5 uintptr, a6 uintptr, a7 uintptr, a8 uintptr, a9 uintptr, a10 uintptr, a11 uintptr, a12 uintptr, a13 uintptr, a14 uintptr) {
+					ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					fastCallIF(cfn, ints, 14, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			}
+		case 5:
+			if hasReturn {
+				impl := func(a1 uintptr, a2 uintptr, a3 uintptr, a4 uintptr, a5 uintptr, f1 float64, a6 uintptr, a7 uintptr, a8 uintptr, a9 uintptr, a10 uintptr, a11 uintptr, a12 uintptr, a13 uintptr, a14 uintptr) uintptr {
+					ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					return fastCallIF(cfn, ints, 14, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			} else {
+				impl := func(a1 uintptr, a2 uintptr, a3 uintptr, a4 uintptr, a5 uintptr, f1 float64, a6 uintptr, a7 uintptr, a8 uintptr, a9 uintptr, a10 uintptr, a11 uintptr, a12 uintptr, a13 uintptr, a14 uintptr) {
+					ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					fastCallIF(cfn, ints, 14, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			}
+		case 6:
+			if hasReturn {
+				impl := func(a1 uintptr, a2 uintptr, a3 uintptr, a4 uintptr, a5 uintptr, a6 uintptr, f1 float64, a7 uintptr, a8 uintptr, a9 uintptr, a10 uintptr, a11 uintptr, a12 uintptr, a13 uintptr, a14 uintptr) uintptr {
+					ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					return fastCallIF(cfn, ints, 14, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			} else {
+				impl := func(a1 uintptr, a2 uintptr, a3 uintptr, a4 uintptr, a5 uintptr, a6 uintptr, f1 float64, a7 uintptr, a8 uintptr, a9 uintptr, a10 uintptr, a11 uintptr, a12 uintptr, a13 uintptr, a14 uintptr) {
+					ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					fastCallIF(cfn, ints, 14, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			}
+		case 7:
+			if hasReturn {
+				impl := func(a1 uintptr, a2 uintptr, a3 uintptr, a4 uintptr, a5 uintptr, a6 uintptr, a7 uintptr, f1 float64, a8 uintptr, a9 uintptr, a10 uintptr, a11 uintptr, a12 uintptr, a13 uintptr, a14 uintptr) uintptr {
+					ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					return fastCallIF(cfn, ints, 14, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			} else {
+				impl := func(a1 uintptr, a2 uintptr, a3 uintptr, a4 uintptr, a5 uintptr, a6 uintptr, a7 uintptr, f1 float64, a8 uintptr, a9 uintptr, a10 uintptr, a11 uintptr, a12 uintptr, a13 uintptr, a14 uintptr) {
+					ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					fastCallIF(cfn, ints, 14, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			}
+		case 8:
+			if hasReturn {
+				impl := func(a1 uintptr, a2 uintptr, a3 uintptr, a4 uintptr, a5 uintptr, a6 uintptr, a7 uintptr, a8 uintptr, f1 float64, a9 uintptr, a10 uintptr, a11 uintptr, a12 uintptr, a13 uintptr, a14 uintptr) uintptr {
+					ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					return fastCallIF(cfn, ints, 14, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			} else {
+				impl := func(a1 uintptr, a2 uintptr, a3 uintptr, a4 uintptr, a5 uintptr, a6 uintptr, a7 uintptr, a8 uintptr, f1 float64, a9 uintptr, a10 uintptr, a11 uintptr, a12 uintptr, a13 uintptr, a14 uintptr) {
+					ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					fastCallIF(cfn, ints, 14, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			}
+		case 9:
+			if hasReturn {
+				impl := func(a1 uintptr, a2 uintptr, a3 uintptr, a4 uintptr, a5 uintptr, a6 uintptr, a7 uintptr, a8 uintptr, a9 uintptr, f1 float64, a10 uintptr, a11 uintptr, a12 uintptr, a13 uintptr, a14 uintptr) uintptr {
+					ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					return fastCallIF(cfn, ints, 14, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			} else {
+				impl := func(a1 uintptr, a2 uintptr, a3 uintptr, a4 uintptr, a5 uintptr, a6 uintptr, a7 uintptr, a8 uintptr, a9 uintptr, f1 float64, a10 uintptr, a11 uintptr, a12 uintptr, a13 uintptr, a14 uintptr) {
+					ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					fastCallIF(cfn, ints, 14, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			}
+		case 10:
+			if hasReturn {
+				impl := func(a1 uintptr, a2 uintptr, a3 uintptr, a4 uintptr, a5 uintptr, a6 uintptr, a7 uintptr, a8 uintptr, a9 uintptr, a10 uintptr, f1 float64, a11 uintptr, a12 uintptr, a13 uintptr, a14 uintptr) uintptr {
+					ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					return fastCallIF(cfn, ints, 14, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			} else {
+				impl := func(a1 uintptr, a2 uintptr, a3 uintptr, a4 uintptr, a5 uintptr, a6 uintptr, a7 uintptr, a8 uintptr, a9 uintptr, a10 uintptr, f1 float64, a11 uintptr, a12 uintptr, a13 uintptr, a14 uintptr) {
+					ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					fastCallIF(cfn, ints, 14, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			}
+		case 11:
+			if hasReturn {
+				impl := func(a1 uintptr, a2 uintptr, a3 uintptr, a4 uintptr, a5 uintptr, a6 uintptr, a7 uintptr, a8 uintptr, a9 uintptr, a10 uintptr, a11 uintptr, f1 float64, a12 uintptr, a13 uintptr, a14 uintptr) uintptr {
+					ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					return fastCallIF(cfn, ints, 14, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			} else {
+				impl := func(a1 uintptr, a2 uintptr, a3 uintptr, a4 uintptr, a5 uintptr, a6 uintptr, a7 uintptr, a8 uintptr, a9 uintptr, a10 uintptr, a11 uintptr, f1 float64, a12 uintptr, a13 uintptr, a14 uintptr) {
+					ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					fastCallIF(cfn, ints, 14, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			}
+		case 12:
+			if hasReturn {
+				impl := func(a1 uintptr, a2 uintptr, a3 uintptr, a4 uintptr, a5 uintptr, a6 uintptr, a7 uintptr, a8 uintptr, a9 uintptr, a10 uintptr, a11 uintptr, a12 uintptr, f1 float64, a13 uintptr, a14 uintptr) uintptr {
+					ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					return fastCallIF(cfn, ints, 14, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			} else {
+				impl := func(a1 uintptr, a2 uintptr, a3 uintptr, a4 uintptr, a5 uintptr, a6 uintptr, a7 uintptr, a8 uintptr, a9 uintptr, a10 uintptr, a11 uintptr, a12 uintptr, f1 float64, a13 uintptr, a14 uintptr) {
+					ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					fastCallIF(cfn, ints, 14, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			}
+		case 13:
+			if hasReturn {
+				impl := func(a1 uintptr, a2 uintptr, a3 uintptr, a4 uintptr, a5 uintptr, a6 uintptr, a7 uintptr, a8 uintptr, a9 uintptr, a10 uintptr, a11 uintptr, a12 uintptr, a13 uintptr, f1 float64, a14 uintptr) uintptr {
+					ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					return fastCallIF(cfn, ints, 14, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			} else {
+				impl := func(a1 uintptr, a2 uintptr, a3 uintptr, a4 uintptr, a5 uintptr, a6 uintptr, a7 uintptr, a8 uintptr, a9 uintptr, a10 uintptr, a11 uintptr, a12 uintptr, a13 uintptr, f1 float64, a14 uintptr) {
+					ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					fastCallIF(cfn, ints, 14, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			}
+		}
+	case 16:
+		switch floatPos {
+		case 0:
+			if hasReturn {
+				impl := func(f1 float64, a1 uintptr, a2 uintptr, a3 uintptr, a4 uintptr, a5 uintptr, a6 uintptr, a7 uintptr, a8 uintptr, a9 uintptr, a10 uintptr, a11 uintptr, a12 uintptr, a13 uintptr, a14 uintptr, a15 uintptr) uintptr {
+					ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					return fastCallIF(cfn, ints, 15, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			} else {
+				impl := func(f1 float64, a1 uintptr, a2 uintptr, a3 uintptr, a4 uintptr, a5 uintptr, a6 uintptr, a7 uintptr, a8 uintptr, a9 uintptr, a10 uintptr, a11 uintptr, a12 uintptr, a13 uintptr, a14 uintptr, a15 uintptr) {
+					ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					fastCallIF(cfn, ints, 15, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			}
+		case 1:
+			if hasReturn {
+				impl := func(a1 uintptr, f1 float64, a2 uintptr, a3 uintptr, a4 uintptr, a5 uintptr, a6 uintptr, a7 uintptr, a8 uintptr, a9 uintptr, a10 uintptr, a11 uintptr, a12 uintptr, a13 uintptr, a14 uintptr, a15 uintptr) uintptr {
+					ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					return fastCallIF(cfn, ints, 15, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			} else {
+				impl := func(a1 uintptr, f1 float64, a2 uintptr, a3 uintptr, a4 uintptr, a5 uintptr, a6 uintptr, a7 uintptr, a8 uintptr, a9 uintptr, a10 uintptr, a11 uintptr, a12 uintptr, a13 uintptr, a14 uintptr, a15 uintptr) {
+					ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					fastCallIF(cfn, ints, 15, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			}
+		case 2:
+			if hasReturn {
+				impl := func(a1 uintptr, a2 uintptr, f1 float64, a3 uintptr, a4 uintptr, a5 uintptr, a6 uintptr, a7 uintptr, a8 uintptr, a9 uintptr, a10 uintptr, a11 uintptr, a12 uintptr, a13 uintptr, a14 uintptr, a15 uintptr) uintptr {
+					ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					return fastCallIF(cfn, ints, 15, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			} else {
+				impl := func(a1 uintptr, a2 uintptr, f1 float64, a3 uintptr, a4 uintptr, a5 uintptr, a6 uintptr, a7 uintptr, a8 uintptr, a9 uintptr, a10 uintptr, a11 uintptr, a12 uintptr, a13 uintptr, a14 uintptr, a15 uintptr) {
+					ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					fastCallIF(cfn, ints, 15, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			}
+		case 3:
+			if hasReturn {
+				impl := func(a1 uintptr, a2 uintptr, a3 uintptr, f1 float64, a4 uintptr, a5 uintptr, a6 uintptr, a7 uintptr, a8 uintptr, a9 uintptr, a10 uintptr, a11 uintptr, a12 uintptr, a13 uintptr, a14 uintptr, a15 uintptr) uintptr {
+					ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					return fastCallIF(cfn, ints, 15, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			} else {
+				impl := func(a1 uintptr, a2 uintptr, a3 uintptr, f1 float64, a4 uintptr, a5 uintptr, a6 uintptr, a7 uintptr, a8 uintptr, a9 uintptr, a10 uintptr, a11 uintptr, a12 uintptr, a13 uintptr, a14 uintptr, a15 uintptr) {
+					ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					fastCallIF(cfn, ints, 15, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			}
+		case 4:
+			if hasReturn {
+				impl := func(a1 uintptr, a2 uintptr, a3 uintptr, a4 uintptr, f1 float64, a5 uintptr, a6 uintptr, a7 uintptr, a8 uintptr, a9 uintptr, a10 uintptr, a11 uintptr, a12 uintptr, a13 uintptr, a14 uintptr, a15 uintptr) uintptr {
+					ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					return fastCallIF(cfn, ints, 15, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			} else {
+				impl := func(a1 uintptr, a2 uintptr, a3 uintptr, a4 uintptr, f1 float64, a5 uintptr, a6 uintptr, a7 uintptr, a8 uintptr, a9 uintptr, a10 uintptr, a11 uintptr, a12 uintptr, a13 uintptr, a14 uintptr, a15 uintptr) {
+					ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					fastCallIF(cfn, ints, 15, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			}
+		case 5:
+			if hasReturn {
+				impl := func(a1 uintptr, a2 uintptr, a3 uintptr, a4 uintptr, a5 uintptr, f1 float64, a6 uintptr, a7 uintptr, a8 uintptr, a9 uintptr, a10 uintptr, a11 uintptr, a12 uintptr, a13 uintptr, a14 uintptr, a15 uintptr) uintptr {
+					ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					return fastCallIF(cfn, ints, 15, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			} else {
+				impl := func(a1 uintptr, a2 uintptr, a3 uintptr, a4 uintptr, a5 uintptr, f1 float64, a6 uintptr, a7 uintptr, a8 uintptr, a9 uintptr, a10 uintptr, a11 uintptr, a12 uintptr, a13 uintptr, a14 uintptr, a15 uintptr) {
+					ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					fastCallIF(cfn, ints, 15, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			}
+		case 6:
+			if hasReturn {
+				impl := func(a1 uintptr, a2 uintptr, a3 uintptr, a4 uintptr, a5 uintptr, a6 uintptr, f1 float64, a7 uintptr, a8 uintptr, a9 uintptr, a10 uintptr, a11 uintptr, a12 uintptr, a13 uintptr, a14 uintptr, a15 uintptr) uintptr {
+					ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					return fastCallIF(cfn, ints, 15, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			} else {
+				impl := func(a1 uintptr, a2 uintptr, a3 uintptr, a4 uintptr, a5 uintptr, a6 uintptr, f1 float64, a7 uintptr, a8 uintptr, a9 uintptr, a10 uintptr, a11 uintptr, a12 uintptr, a13 uintptr, a14 uintptr, a15 uintptr) {
+					ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					fastCallIF(cfn, ints, 15, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			}
+		case 7:
+			if hasReturn {
+				impl := func(a1 uintptr, a2 uintptr, a3 uintptr, a4 uintptr, a5 uintptr, a6 uintptr, a7 uintptr, f1 float64, a8 uintptr, a9 uintptr, a10 uintptr, a11 uintptr, a12 uintptr, a13 uintptr, a14 uintptr, a15 uintptr) uintptr {
+					ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					return fastCallIF(cfn, ints, 15, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			} else {
+				impl := func(a1 uintptr, a2 uintptr, a3 uintptr, a4 uintptr, a5 uintptr, a6 uintptr, a7 uintptr, f1 float64, a8 uintptr, a9 uintptr, a10 uintptr, a11 uintptr, a12 uintptr, a13 uintptr, a14 uintptr, a15 uintptr) {
+					ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					fastCallIF(cfn, ints, 15, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			}
+		case 8:
+			if hasReturn {
+				impl := func(a1 uintptr, a2 uintptr, a3 uintptr, a4 uintptr, a5 uintptr, a6 uintptr, a7 uintptr, a8 uintptr, f1 float64, a9 uintptr, a10 uintptr, a11 uintptr, a12 uintptr, a13 uintptr, a14 uintptr, a15 uintptr) uintptr {
+					ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					return fastCallIF(cfn, ints, 15, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			} else {
+				impl := func(a1 uintptr, a2 uintptr, a3 uintptr, a4 uintptr, a5 uintptr, a6 uintptr, a7 uintptr, a8 uintptr, f1 float64, a9 uintptr, a10 uintptr, a11 uintptr, a12 uintptr, a13 uintptr, a14 uintptr, a15 uintptr) {
+					ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					fastCallIF(cfn, ints, 15, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			}
+		case 9:
+			if hasReturn {
+				impl := func(a1 uintptr, a2 uintptr, a3 uintptr, a4 uintptr, a5 uintptr, a6 uintptr, a7 uintptr, a8 uintptr, a9 uintptr, f1 float64, a10 uintptr, a11 uintptr, a12 uintptr, a13 uintptr, a14 uintptr, a15 uintptr) uintptr {
+					ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					return fastCallIF(cfn, ints, 15, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			} else {
+				impl := func(a1 uintptr, a2 uintptr, a3 uintptr, a4 uintptr, a5 uintptr, a6 uintptr, a7 uintptr, a8 uintptr, a9 uintptr, f1 float64, a10 uintptr, a11 uintptr, a12 uintptr, a13 uintptr, a14 uintptr, a15 uintptr) {
+					ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					fastCallIF(cfn, ints, 15, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			}
+		case 10:
+			if hasReturn {
+				impl := func(a1 uintptr, a2 uintptr, a3 uintptr, a4 uintptr, a5 uintptr, a6 uintptr, a7 uintptr, a8 uintptr, a9 uintptr, a10 uintptr, f1 float64, a11 uintptr, a12 uintptr, a13 uintptr, a14 uintptr, a15 uintptr) uintptr {
+					ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					return fastCallIF(cfn, ints, 15, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			} else {
+				impl := func(a1 uintptr, a2 uintptr, a3 uintptr, a4 uintptr, a5 uintptr, a6 uintptr, a7 uintptr, a8 uintptr, a9 uintptr, a10 uintptr, f1 float64, a11 uintptr, a12 uintptr, a13 uintptr, a14 uintptr, a15 uintptr) {
+					ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					fastCallIF(cfn, ints, 15, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			}
+		case 11:
+			if hasReturn {
+				impl := func(a1 uintptr, a2 uintptr, a3 uintptr, a4 uintptr, a5 uintptr, a6 uintptr, a7 uintptr, a8 uintptr, a9 uintptr, a10 uintptr, a11 uintptr, f1 float64, a12 uintptr, a13 uintptr, a14 uintptr, a15 uintptr) uintptr {
+					ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					return fastCallIF(cfn, ints, 15, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			} else {
+				impl := func(a1 uintptr, a2 uintptr, a3 uintptr, a4 uintptr, a5 uintptr, a6 uintptr, a7 uintptr, a8 uintptr, a9 uintptr, a10 uintptr, a11 uintptr, f1 float64, a12 uintptr, a13 uintptr, a14 uintptr, a15 uintptr) {
+					ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					fastCallIF(cfn, ints, 15, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			}
+		case 12:
+			if hasReturn {
+				impl := func(a1 uintptr, a2 uintptr, a3 uintptr, a4 uintptr, a5 uintptr, a6 uintptr, a7 uintptr, a8 uintptr, a9 uintptr, a10 uintptr, a11 uintptr, a12 uintptr, f1 float64, a13 uintptr, a14 uintptr, a15 uintptr) uintptr {
+					ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					return fastCallIF(cfn, ints, 15, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			} else {
+				impl := func(a1 uintptr, a2 uintptr, a3 uintptr, a4 uintptr, a5 uintptr, a6 uintptr, a7 uintptr, a8 uintptr, a9 uintptr, a10 uintptr, a11 uintptr, a12 uintptr, f1 float64, a13 uintptr, a14 uintptr, a15 uintptr) {
+					ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					fastCallIF(cfn, ints, 15, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			}
+		case 13:
+			if hasReturn {
+				impl := func(a1 uintptr, a2 uintptr, a3 uintptr, a4 uintptr, a5 uintptr, a6 uintptr, a7 uintptr, a8 uintptr, a9 uintptr, a10 uintptr, a11 uintptr, a12 uintptr, a13 uintptr, f1 float64, a14 uintptr, a15 uintptr) uintptr {
+					ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					return fastCallIF(cfn, ints, 15, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			} else {
+				impl := func(a1 uintptr, a2 uintptr, a3 uintptr, a4 uintptr, a5 uintptr, a6 uintptr, a7 uintptr, a8 uintptr, a9 uintptr, a10 uintptr, a11 uintptr, a12 uintptr, a13 uintptr, f1 float64, a14 uintptr, a15 uintptr) {
+					ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					fastCallIF(cfn, ints, 15, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			}
+		case 14:
+			if hasReturn {
+				impl := func(a1 uintptr, a2 uintptr, a3 uintptr, a4 uintptr, a5 uintptr, a6 uintptr, a7 uintptr, a8 uintptr, a9 uintptr, a10 uintptr, a11 uintptr, a12 uintptr, a13 uintptr, a14 uintptr, f1 float64, a15 uintptr) uintptr {
+					ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					return fastCallIF(cfn, ints, 15, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			} else {
+				impl := func(a1 uintptr, a2 uintptr, a3 uintptr, a4 uintptr, a5 uintptr, a6 uintptr, a7 uintptr, a8 uintptr, a9 uintptr, a10 uintptr, a11 uintptr, a12 uintptr, a13 uintptr, a14 uintptr, f1 float64, a15 uintptr) {
+					ints := [15]uintptr{a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15}
+					var floats [8]uintptr
+					floats[0] = uintptr(math.Float64bits(f1))
+					fastCallIF(cfn, ints, 15, floats, 1)
+				}
+				forceFuncPtr(fn, &impl)
+			}
+		}
+	}
+}
+
 // registerFastFuncFloatN handles functions with interleaved or multiple float args.
 // Falls back to reflect.MakeFunc since the combinatorial explosion of
 // concrete closures is not worth the code size.
@@ -3377,9 +6163,45 @@ func tryRegisterFastPath(fn reflect.Value, cfn uintptr, ty reflect.Type) bool {
 		return true
 	}
 
+	// TrailingFloat32x2: 2 trailing 32-bit floats
+	if numFloats == 2 && trailingFloats {
+		allMatch := true
+		for i := numInts; i < numIn; i++ {
+			if ty.In(i).Kind() != reflect.Float32 {
+				allMatch = false
+				break
+			}
+		}
+		if allMatch {
+			registerFastFuncTrailingFloat32x2(fn, cfn, numInts, hasReturn)
+			return true
+		}
+	}
+
+	// TrailingFloat64x2: 2 trailing 64-bit floats
+	if numFloats == 2 && trailingFloats {
+		allMatch := true
+		for i := numInts; i < numIn; i++ {
+			if ty.In(i).Kind() != reflect.Float64 {
+				allMatch = false
+				break
+			}
+		}
+		if allMatch {
+			registerFastFuncTrailingFloat64x2(fn, cfn, numInts, hasReturn)
+			return true
+		}
+	}
+
 	// Interleaved float32x1
 	if numFloats == 1 && !trailingFloats && ty.In(floatPos).Kind() == reflect.Float32 {
 		registerFastFuncInterleavedFloat32x1(fn, cfn, numIn, floatPos, hasReturn)
+		return true
+	}
+
+	// Interleaved float64x1
+	if numFloats == 1 && !trailingFloats && ty.In(floatPos).Kind() == reflect.Float64 {
+		registerFastFuncInterleavedFloat64x1(fn, cfn, numIn, floatPos, hasReturn)
 		return true
 	}
 
