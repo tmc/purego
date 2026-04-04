@@ -64,7 +64,8 @@ var cbs struct {
 // cbFuncs is an immutable snapshot of cbs.funcs[:cbs.numFn], updated atomically
 // at each callback registration. Since callbacks are append-only, a snapshot
 // taken at registration time is valid for all indices <= its length.
-var cbFuncs atomic.Pointer[[]reflect.Value]
+// Uses atomic.Value (not atomic.Pointer) for Go 1.18 compatibility.
+var cbFuncs atomic.Value // stores []reflect.Value
 
 // callbackArgPools pools []reflect.Value slices by arity to avoid per-call
 // allocation in callbackWrap. Index is the number of function parameters.
@@ -119,7 +120,7 @@ output:
 	// Publish an immutable snapshot for lock-free lookup in callbackWrap.
 	snapshot := make([]reflect.Value, cbs.numFn)
 	copy(snapshot, cbs.funcs[:cbs.numFn])
-	cbFuncs.Store(&snapshot)
+	cbFuncs.Store(snapshot)
 	cbs.lock.Unlock()
 	return callbackasmAddr(idx)
 }
@@ -143,7 +144,7 @@ var callbackWrap_call = callbackWrap
 // callbackWrap is called by assembly code which determines which Go function to call.
 // This function takes the arguments and passes them to the Go function and returns the result.
 func callbackWrap(a *callbackArgs) {
-	funcs := *cbFuncs.Load()
+	funcs := cbFuncs.Load().([]reflect.Value)
 	fn := funcs[a.index]
 	fnType := fn.Type()
 	numIn := fnType.NumIn()
