@@ -10,6 +10,7 @@ import (
 	"reflect"
 	"runtime"
 	"sync"
+	"sync/atomic"
 	"unsafe"
 )
 
@@ -60,6 +61,15 @@ var cbs struct {
 	funcs [maxCB]reflect.Value // the saved callbacks
 }
 
+// cbFuncs is an immutable snapshot of cbs.funcs[:cbs.numFn], updated atomically
+// at each callback registration. Since callbacks are append-only, a snapshot
+// taken at registration time is valid for all indices <= its length.
+var cbFuncs atomic.Pointer[[]reflect.Value]
+
+// callbackArgPools pools []reflect.Value slices by arity to avoid per-call
+// allocation in callbackWrap. Index is the number of function parameters.
+var callbackArgPools [maxArgs + 1]sync.Pool
+
 func compileCallback(fn any) uintptr {
 	val := reflect.ValueOf(fn)
 	if val.Kind() != reflect.Func {
@@ -99,13 +109,19 @@ output:
 		panic("purego: callbacks can only have one return")
 	}
 	cbs.lock.Lock()
-	defer cbs.lock.Unlock()
 	if cbs.numFn >= maxCB {
+		cbs.lock.Unlock()
 		panic("purego: the maximum number of callbacks has been reached")
 	}
 	cbs.funcs[cbs.numFn] = val
 	cbs.numFn++
-	return callbackasmAddr(cbs.numFn - 1)
+	idx := cbs.numFn - 1
+	// Publish an immutable snapshot for lock-free lookup in callbackWrap.
+	snapshot := make([]reflect.Value, cbs.numFn)
+	copy(snapshot, cbs.funcs[:cbs.numFn])
+	cbFuncs.Store(&snapshot)
+	cbs.lock.Unlock()
+	return callbackasmAddr(idx)
 }
 
 const ptrSize = unsafe.Sizeof((*int)(nil))
@@ -127,11 +143,20 @@ var callbackWrap_call = callbackWrap
 // callbackWrap is called by assembly code which determines which Go function to call.
 // This function takes the arguments and passes them to the Go function and returns the result.
 func callbackWrap(a *callbackArgs) {
-	cbs.lock.Lock()
-	fn := cbs.funcs[a.index]
-	cbs.lock.Unlock()
+	funcs := *cbFuncs.Load()
+	fn := funcs[a.index]
 	fnType := fn.Type()
-	args := make([]reflect.Value, fnType.NumIn())
+	numIn := fnType.NumIn()
+	var args []reflect.Value
+	if numIn <= maxArgs {
+		if v := callbackArgPools[numIn].Get(); v != nil {
+			args = v.([]reflect.Value)
+		} else {
+			args = make([]reflect.Value, numIn)
+		}
+	} else {
+		args = make([]reflect.Value, numIn)
+	}
 	frame := (*[callbackMaxFrame]uintptr)(a.args)
 	// stackFrame points to stack-passed arguments. On most architectures this is
 	// contiguous with frame (after register args), but on ppc64le it's separate.
@@ -240,6 +265,15 @@ func callbackWrap(a *callbackArgs) {
 		}
 	}
 	ret := fn.Call(args)
+	// Return the args slice to the pool before processing results.
+	// The args elements are no longer needed after Call returns.
+	if numIn <= maxArgs {
+		// Clear references to allow GC of pointed-to values.
+		for i := range args {
+			args[i] = reflect.Value{}
+		}
+		callbackArgPools[numIn].Put(args)
+	}
 	if len(ret) > 0 {
 		switch k := ret[0].Kind(); k {
 		case reflect.Uint, reflect.Uint64, reflect.Uint32, reflect.Uint16, reflect.Uint8, reflect.Uintptr:
