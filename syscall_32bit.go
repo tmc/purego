@@ -12,6 +12,9 @@ import (
 
 const (
 	maxArgs = 32
+
+	// MaxArgs is the maximum number of integer arguments supported by CallN.
+	MaxArgs = maxArgs
 )
 
 type syscallArgs struct {
@@ -41,6 +44,40 @@ func syscall_SyscallN(fn uintptr, sysargs []uintptr, floats []uintptr, r8 uintpt
 	}
 	runtime_cgocall(syscallXABI0, unsafe.Pointer(s))
 	return s
+}
+
+// CallN calls the C function fn with the given integer and float register
+// arguments. See the documentation on the 64-bit variant for details.
+//
+// On 32-bit platforms, only the first 8 float register slots are used.
+//
+// CallN does not allocate.
+func CallN(fn uintptr, ints *[MaxArgs]uintptr, floats *[8]uintptr, arm64R8 uintptr) (r1, r2 uintptr) {
+	if fn == 0 {
+		panic("purego: fn is nil")
+	}
+	if runtime.GOOS == "windows" {
+		panic("purego: CallN is not supported on Windows; use SyscallN")
+	}
+	s := thePool.Get().(*syscallArgs)
+	*s = syscallArgs{
+		fn:  fn,
+		a1:  ints[0], a2: ints[1], a3: ints[2], a4: ints[3],
+		a5:  ints[4], a6: ints[5], a7: ints[6], a8: ints[7],
+		a9:  ints[8], a10: ints[9], a11: ints[10], a12: ints[11],
+		a13: ints[12], a14: ints[13], a15: ints[14], a16: ints[15],
+		a17: ints[16], a18: ints[17], a19: ints[18], a20: ints[19],
+		a21: ints[20], a22: ints[21], a23: ints[22], a24: ints[23],
+		a25: ints[24], a26: ints[25], a27: ints[26], a28: ints[27],
+		a29: ints[28], a30: ints[29], a31: ints[30], a32: ints[31],
+		f1:  floats[0], f2: floats[1], f3: floats[2], f4: floats[3],
+		f5:  floats[4], f6: floats[5], f7: floats[6], f8: floats[7],
+		arm64_r8: arm64R8,
+	}
+	runtime_cgocall(syscallXABI0, unsafe.Pointer(s))
+	r1, r2 = s.a1, s.a2
+	thePool.Put(s)
+	return
 }
 
 // SyscallN takes fn, a C function pointer and a list of arguments as uintptr.
