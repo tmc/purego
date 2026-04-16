@@ -33,6 +33,14 @@ int64_t sum15_c(int64_t a1, int64_t a2, int64_t a3, int64_t a4, int64_t a5,
          a14 + a15;
 }
 
+int64_t order5_c(int64_t a1, int64_t a2, int64_t a3, int64_t a4, int64_t a5) {
+  return a1 + a2 * 10 + a3 * 100 + a4 * 1000 + a5 * 10000;
+}
+
+int64_t mixed_int_float_c(int64_t a1, double f1, int64_t a2, double f2) {
+  return a1 + (int64_t)(f1 * 10) + a2 * 100 + (int64_t)(f2 * 1000);
+}
+
 typedef int64_t (*callback1_t)(int64_t);
 int64_t call_callback1(callback1_t cb, int64_t a1) { return cb(a1); }
 

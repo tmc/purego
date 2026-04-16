@@ -4,6 +4,9 @@
 package purego_test
 
 import (
+	"math"
+	"os"
+	"path/filepath"
 	"runtime"
 	"testing"
 	"unsafe"
@@ -11,6 +14,29 @@ import (
 	"github.com/ebitengine/purego"
 	"github.com/ebitengine/purego/internal/load"
 )
+
+func openBenchmarkLibrary(t testing.TB) uintptr {
+	t.Helper()
+
+	libFileName := filepath.Join(t.TempDir(), "libbenchmark.so")
+	if err := buildSharedLib("CC", libFileName, filepath.Join("testdata", "benchmarktest", "benchmark.c")); err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() {
+		_ = os.Remove(libFileName)
+	})
+
+	lib, err := load.OpenLibrary(libFileName)
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() {
+		if err := load.CloseLibrary(lib); err != nil {
+			t.Errorf("failed to close library: %v", err)
+		}
+	})
+	return lib
+}
 
 func TestCallN_abs(t *testing.T) {
 	library, err := getSystemLibrary()
@@ -56,6 +82,46 @@ func TestCallN_atoi(t *testing.T) {
 		t.Fatalf("atoi(\"12345\") = %d, want 12345", got)
 	}
 	runtime.KeepAlive(str)
+}
+
+func TestCallN_Order5(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		t.Skip("CallN not supported on Windows")
+	}
+	lib := openBenchmarkLibrary(t)
+	sym, err := load.OpenSymbol(lib, "order5_c")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	var ints [purego.MaxArgs]uintptr
+	var floats [8]uintptr
+	ints[0], ints[1], ints[2], ints[3], ints[4] = 1, 2, 3, 4, 5
+	r1, _ := purego.CallN(sym, &ints, &floats, 0)
+	if got := int64(r1); got != 54321 {
+		t.Fatalf("order5_c = %d, want 54321", got)
+	}
+}
+
+func TestCallN_MixedIntFloat(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		t.Skip("CallN not supported on Windows")
+	}
+	lib := openBenchmarkLibrary(t)
+	sym, err := load.OpenSymbol(lib, "mixed_int_float_c")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	var ints [purego.MaxArgs]uintptr
+	var floats [8]uintptr
+	ints[0], ints[1] = 3, 4
+	floats[0] = uintptr(math.Float64bits(1.5))
+	floats[1] = uintptr(math.Float64bits(2.5))
+	r1, _ := purego.CallN(sym, &ints, &floats, 0)
+	if got := int64(r1); got != 2918 {
+		t.Fatalf("mixed_int_float_c = %d, want 2918", got)
+	}
 }
 
 func TestCallN_ZeroAllocs(t *testing.T) {
