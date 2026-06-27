@@ -180,3 +180,27 @@ double stack_32_mixed_int_float(
            f9 * 25 + f10 * 26 + f11 * 27 + f12 * 28 +
            f13 * 29 + f14 * 30 + f15 * 31 + f16 * 32;
 }
+
+// calln_floatN take N integer arguments followed by a single trailing double.
+// They fold the double into the integer result via (long)(f1*1000), so the
+// return value is only correct when f1 was passed in the first floating-point
+// argument register rather than being misplaced into an integer register.
+long calln_float1(long a1, double f1) {
+    return a1 + (long)(f1 * 1000);
+}
+
+long calln_float2(long a1, long a2, double f1) {
+    return a1 + a2 + (long)(f1 * 1000);
+}
+
+long calln_float3(long a1, long a2, long a3, double f1) {
+    return a1 + a2 + a3 + (long)(f1 * 1000);
+}
+
+long calln_float4(long a1, long a2, long a3, long a4, double f1) {
+    return a1 + a2 + a3 + a4 + (long)(f1 * 1000);
+}
+
+long calln_float8(long a1, long a2, long a3, long a4, long a5, long a6, long a7, long a8, double f1) {
+    return a1 + a2 + a3 + a4 + a5 + a6 + a7 + a8 + (long)(f1 * 1000);
+}
