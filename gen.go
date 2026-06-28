@@ -4,3 +4,4 @@
 package purego
 
 //go:generate go run wincallback.go
+//go:generate go run gen_float.go
