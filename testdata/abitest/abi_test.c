@@ -204,3 +204,28 @@ long calln_float4(long a1, long a2, long a3, long a4, double f1) {
 long calln_float8(long a1, long a2, long a3, long a4, long a5, long a6, long a7, long a8, double f1) {
     return a1 + a2 + a3 + a4 + a5 + a6 + a7 + a8 + (long)(f1 * 1000);
 }
+
+// calln_f32_N mirror calln_floatN but take a single-precision float trailing
+// argument instead of a double. They exist to verify the Syscall<N>Float1_32
+// family, which must deliver f1 as a C `float` (low 32 bits of the FP register);
+// a double-encoded value read as a float yields garbage, so the return is only
+// correct when the single-precision bit pattern reached the FP register.
+long calln_f32_1(long a1, float f1) {
+    return a1 + (long)(f1 * 1000);
+}
+
+long calln_f32_2(long a1, long a2, float f1) {
+    return a1 + a2 + (long)(f1 * 1000);
+}
+
+long calln_f32_3(long a1, long a2, long a3, float f1) {
+    return a1 + a2 + a3 + (long)(f1 * 1000);
+}
+
+long calln_f32_4(long a1, long a2, long a3, long a4, float f1) {
+    return a1 + a2 + a3 + a4 + (long)(f1 * 1000);
+}
+
+long calln_f32_8(long a1, long a2, long a3, long a4, long a5, long a6, long a7, long a8, float f1) {
+    return a1 + a2 + a3 + a4 + a5 + a6 + a7 + a8 + (long)(f1 * 1000);
+}
