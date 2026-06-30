@@ -16,7 +16,7 @@ import (
 	"testing"
 	"unsafe"
 
-	"github.com/ebitengine/purego"
+	"github.com/tmc/purego"
 )
 
 func TestAllThreadsSyscall(t *testing.T) {

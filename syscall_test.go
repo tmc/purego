@@ -9,8 +9,8 @@ import (
 	"testing"
 	"unsafe"
 
-	"github.com/ebitengine/purego"
-	"github.com/ebitengine/purego/internal/load"
+	"github.com/tmc/purego"
+	"github.com/tmc/purego/internal/load"
 )
 
 func TestOS(t *testing.T) {

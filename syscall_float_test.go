@@ -9,8 +9,8 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/ebitengine/purego"
-	"github.com/ebitengine/purego/internal/load"
+	"github.com/tmc/purego"
+	"github.com/tmc/purego/internal/load"
 )
 
 // openABITestLib builds and opens the abitest shared library used by the

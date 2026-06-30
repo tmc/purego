@@ -14,7 +14,7 @@ import (
 	"testing"
 	"unsafe"
 
-	"github.com/ebitengine/purego"
+	"github.com/tmc/purego"
 )
 
 func TestRegisterFunc_structArgs(t *testing.T) {

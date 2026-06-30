@@ -8,8 +8,8 @@ package purego_test
 import (
 	"testing"
 
-	"github.com/ebitengine/purego"
-	"github.com/ebitengine/purego/internal/load"
+	"github.com/tmc/purego"
+	"github.com/tmc/purego/internal/load"
 )
 
 // TestSyscallFloat1_32 verifies that the Syscall<N>Float32x1 family delivers

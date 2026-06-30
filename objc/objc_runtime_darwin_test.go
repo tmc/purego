@@ -9,8 +9,8 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/ebitengine/purego"
-	"github.com/ebitengine/purego/objc"
+	"github.com/tmc/purego"
+	"github.com/tmc/purego/objc"
 )
 
 func ExampleRegisterClass_helloworld() {

@@ -1,5 +1,5 @@
 # purego
-[![Go Reference](https://pkg.go.dev/badge/github.com/ebitengine/purego?GOOS=darwin.svg)](https://pkg.go.dev/github.com/ebitengine/purego?GOOS=darwin)
+[![Go Reference](https://pkg.go.dev/badge/github.com/tmc/purego?GOOS=darwin.svg)](https://pkg.go.dev/github.com/tmc/purego?GOOS=darwin)
 
 A library for calling C functions from Go without Cgo.
 
@@ -49,14 +49,14 @@ Tier 2 platforms are supported by PureGo on a best-effort basis. Critical bugs o
 #### Support Notes
 
 1. These architectures require CGO_ENABLED=1 to compile
-2. These architectures require the special flag `-gcflags="github.com/ebitengine/purego/internal/fakecgo=-std"` to compile with CGO_ENABLED=0
+2. These architectures require the special flag `-gcflags="github.com/tmc/purego/internal/fakecgo=-std"` to compile with CGO_ENABLED=0
 3. These architectures only support `SyscallN` and `NewCallback`
 4. These architectures are no longer supported as of Go 1.26
 
 ## Example
 
 The example below only showcases purego use for macOS and Linux. The other platforms require special handling which can
-be seen in the complete example at [examples/libc](https://github.com/ebitengine/purego/tree/main/examples/libc) which supports FreeBSD and Windows.
+be seen in the complete example at [examples/libc](https://github.com/tmc/purego/tree/main/examples/libc) which supports FreeBSD and Windows.
 
 ```go
 package main
@@ -65,7 +65,7 @@ import (
 	"fmt"
 	"runtime"
 
-	"github.com/ebitengine/purego"
+	"github.com/tmc/purego"
 )
 
 func getSystemLibrary() string {

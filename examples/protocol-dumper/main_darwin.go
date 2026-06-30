@@ -24,7 +24,7 @@ import (
 	"strings"
 	"text/template"
 
-	"github.com/ebitengine/purego/objc"
+	"github.com/tmc/purego/objc"
 )
 
 var protocols = []string{
@@ -79,7 +79,7 @@ package main
 import (
 	"log"
 
-	"github.com/ebitengine/purego/objc"
+	"github.com/tmc/purego/objc"
 )
 
 func init() {
