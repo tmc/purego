@@ -244,3 +244,40 @@ func ExampleAllocateProtocol() {
 	// accessibilityElement TB,GisBar
 	// isFoo B16@0:8
 }
+
+func TestRegisterClass_integerEncodings(t *testing.T) {
+	class, err := objc.RegisterClass(
+		"PuregoIntegerEncodings",
+		objc.GetClass("NSObject"),
+		nil,
+		nil,
+		[]objc.MethodDef{
+			{
+				Cmd: objc.RegisterName("takeInt:int64:uint:uint64:uint16:"),
+				Fn:  func(_ objc.ID, _ objc.SEL, a int, b int64, c uint, d uint64, e uint16) {},
+			},
+		},
+	)
+	if err != nil {
+		t.Fatalf("RegisterClass: %v", err)
+	}
+
+	objcLib, err := purego.Dlopen("/usr/lib/libobjc.A.dylib", purego.RTLD_GLOBAL|purego.RTLD_NOW)
+	if err != nil {
+		t.Fatalf("dlopen libobjc: %v", err)
+	}
+	var classGetInstanceMethod func(objc.Class, objc.SEL) uintptr
+	var methodGetTypeEncoding func(uintptr) string
+	purego.RegisterLibFunc(&classGetInstanceMethod, objcLib, "class_getInstanceMethod")
+	purego.RegisterLibFunc(&methodGetTypeEncoding, objcLib, "method_getTypeEncoding")
+
+	method := classGetInstanceMethod(class, objc.RegisterName("takeInt:int64:uint:uint64:uint16:"))
+	if method == 0 {
+		t.Fatal("method not found")
+	}
+	// All supported darwin targets are LP64, where @encode spells
+	// 64-bit integers "q" and "Q", not the 32-bit "l" and "L".
+	if got, want := methodGetTypeEncoding(method), "v@:qqQQS"; got != want {
+		t.Errorf("type encoding = %q, want %q", got, want)
+	}
+}
