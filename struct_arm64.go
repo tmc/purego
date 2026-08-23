@@ -368,7 +368,7 @@ func shouldBundleStackArgs(v reflect.Value, numInts, numFloats int) bool {
 	}
 
 	kind := v.Kind()
-	isFloat := kind == reflect.Float32 || kind == reflect.Float64
+	isFloat := isFloatABIType(v.Type())
 	isInt := !isFloat && kind != reflect.Struct
 	primitiveOnStack :=
 		(isInt && numInts >= numOfIntegerRegisters()) ||
@@ -456,7 +456,7 @@ func collectStackArgs(args []reflect.Value, startIdx int, numInts, numFloats int
 			fitsInRegister, newNumInts, newNumFloats = structFitsInRegisters(val, tempNumInts, tempNumFloats)
 		} else {
 			// Primitive argument
-			isFloat := val.Kind() == reflect.Float32 || val.Kind() == reflect.Float64
+			isFloat := isFloatABIType(val.Type())
 			if isFloat {
 				fitsInRegister = tempNumFloats < numOfFloatRegisters()
 				newNumFloats = tempNumFloats + 1

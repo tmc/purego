@@ -63,6 +63,7 @@ func RegisterLibFunc(fptr any, handle uintptr, name string) {
 //	int64 <=> int64_t
 //	float32 <=> float
 //	float64 <=> double
+//	Float16 <=> _Float16 (arguments only on Apple ARM64)
 //	struct <=> struct (android, darwin, ios, linux, and windows on amd64/arm64)
 //	func <=> C function
 //	unsafe.Pointer, *T <=> void*
@@ -134,6 +135,9 @@ func RegisterFunc(fptr any, cfn uintptr) {
 	if cfn == 0 {
 		panic("purego: cfn is nil")
 	}
+	if ty.NumOut() == 1 && containsFloat16Value(ty.Out(0)) {
+		panic("purego: Float16 results are not supported")
+	}
 	if ty.NumOut() == 1 && (ty.Out(0).Kind() == reflect.Float32 || ty.Out(0).Kind() == reflect.Float64) &&
 		runtime.GOARCH != "arm" && runtime.GOARCH != "arm64" && runtime.GOARCH != "386" && runtime.GOARCH != "amd64" && runtime.GOARCH != "loong64" && runtime.GOARCH != "ppc64le" && runtime.GOARCH != "riscv64" && runtime.GOARCH != "s390x" {
 		panic("purego: float returns are not supported")
@@ -147,8 +151,23 @@ func RegisterFunc(fptr any, cfn uintptr) {
 		var stack int
 		for i := 0; i < ty.NumIn(); i++ {
 			arg := ty.In(i)
+			if isFloat16Type(arg) {
+				if !supportsFloat16Arguments() {
+					panic("purego: Float16 arguments are only supported on Apple ARM64")
+				}
+				if floats < floatArgRegs {
+					floats++
+				} else {
+					stack++
+				}
+				continue
+			}
+			if containsFloat16Value(arg) {
+				panic("purego: Float16 in aggregate arguments is not supported")
+			}
 			switch arg.Kind() {
 			case reflect.Func:
+				rejectFloat16CallbackType(arg)
 				// This only does preliminary testing to ensure the CDecl argument
 				// is the first argument. Full testing is done when the callback is actually
 				// created in NewCallback.
@@ -313,6 +332,15 @@ func RegisterFunc(fptr any, cfn uintptr) {
 					panic("purego: can only expand last parameter")
 				}
 				for _, x := range variadic {
+					if x != nil {
+						t := reflect.TypeOf(x)
+						if isFloat16Type(t) {
+							panic("purego: Float16 variadic arguments are not supported")
+						}
+						if containsFloat16Value(t) {
+							panic("purego: Float16 in aggregate variadic arguments is not supported")
+						}
+					}
 					keepAlive = addValue(reflect.ValueOf(x), keepAlive, addInt, addFloat, addStack, &numInts, &numFloats, &numStack)
 				}
 				continue
@@ -410,6 +438,10 @@ func RegisterFunc(fptr any, cfn uintptr) {
 
 func addValue(v reflect.Value, keepAlive []any, addInt func(x uintptr), addFloat func(x uintptr), addStack func(x uintptr), numInts *int, numFloats *int, numStack *int) []any {
 	const is32bit = unsafe.Sizeof(uintptr(0)) == 4
+	if isFloat16Type(v.Type()) {
+		addFloat(uintptr(v.Uint()) & 0xffff)
+		return keepAlive
+	}
 	switch v.Kind() {
 	case reflect.String:
 		ptr := strings.CString(v.String())
@@ -493,6 +525,9 @@ func isAllSameFloat(ty reflect.Type) (allFloats bool, numFields int) {
 func checkStructFieldsSupported(ty reflect.Type) {
 	for i := 0; i < ty.NumField(); i++ {
 		f := ty.Field(i).Type
+		if containsFloat16Value(f) {
+			panic("purego: Float16 in structs is not supported")
+		}
 		if f.Kind() == reflect.Array {
 			f = f.Elem()
 		} else if f.Kind() == reflect.Struct {
@@ -597,7 +632,7 @@ func estimateStackBytes(ty reflect.Type) int {
 		size := int(arg.Size())
 
 		// Check if this goes to register or stack
-		usesInt := arg.Kind() != reflect.Float32 && arg.Kind() != reflect.Float64
+		usesInt := !isFloatABIType(arg)
 		if usesInt && numInts < numOfIntegerRegisters() {
 			numInts++
 		} else if !usesInt && numFloats < numOfFloatRegisters() {

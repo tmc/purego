@@ -27,6 +27,7 @@ func syscall_syscallN(fn uintptr, args ...uintptr) (r1, r2, err uintptr) {
 // provides similar functionality to windows.NewCallback it is distinct.
 func NewCallback(fn any) uintptr {
 	ty := reflect.TypeOf(fn)
+	rejectFloat16CallbackType(ty)
 	for i := 0; i < ty.NumIn(); i++ {
 		in := ty.In(i)
 		if !in.AssignableTo(reflect.TypeFor[CDecl]()) {
